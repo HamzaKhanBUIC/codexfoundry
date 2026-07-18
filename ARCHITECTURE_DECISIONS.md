@@ -225,3 +225,24 @@ trade-offs are recorded here.
   security risk, or exceed the single-fixture MVP scope.
 - **Consequences:** Any baseline mismatch or missing map element fails closed.
   Generic repository support remains explicitly out of scope.
+
+## ADR-013 — Treat Codex planning output as an untrusted, human-approved proposal
+
+- **Status:** Accepted
+- **Milestone:** Gate 2 issue → memory → plan integration
+- **Decision:** Render a bounded GPT-5.6/Codex planning prompt from the trusted
+  task, validated repository map, and exact persisted Memory Pack. Accept only
+  exact JSON, validate paths/commands/proof assertions against policy, and
+  require a human approval or rejection before implementation may begin.
+- **Why:** A plan can be useful without granting a model execution authority.
+  This preserves the visible Codex planning role while keeping the proof
+  contract, command policy, and state transition enforceable and reviewable.
+- **Alternatives considered:** Allow free-form Planner text; let the Planner
+  create its own worktree or run commands; embed a credentialed generic model
+  API wrapper in the MVP.
+- **Why rejected:** Free-form text is not a reliable handoff; planner execution
+  bypasses the human gate and worktree boundary; a generic API wrapper adds
+  credential/operational risk and weakens the Codex-first product story.
+- **Consequences:** The product records only a validated structured proposal,
+  not private reasoning. Gate 3 must receive an already approved plan and may
+  not reinterpret it as permission beyond its fixed paths and commands.
