@@ -392,3 +392,24 @@ trade-offs are recorded here.
 - **Consequences:** The replay produced a deliberate failing artifact and the
   regression candidate is blocked from merge. A future vault update for this
   result requires separate human approval.
+
+## ADR-022 — Start the dashboard as a read-only evidence surface
+
+- **Status:** Accepted
+- **Milestone:** 4, dashboard foundation
+- **Decision:** Build the first judge-facing Foundry dashboard as a local
+  Fluent UI React application that renders the actual PAY-17 evidence and
+  approval history, while deferring API-backed actions until their policy and
+  persistence contracts are implemented.
+- **Why:** The completed workflow needs a clear, judge-runnable story now. A
+  read-only surface makes evidence, provenance, and human control visible
+  without falsely implying that buttons can perform unimplemented operations.
+- **Alternatives considered:** Build generic repository chat first; place
+  placeholder approval buttons in the UI; delay all UI until every endpoint is
+  complete.
+- **Why rejected:** Generic chat dilutes Foundry's proof system; placeholder
+  actions risk trust-boundary confusion; a delayed UI hides the product value
+  already demonstrated by the deterministic scenario.
+- **Consequences:** The dashboard must label its evidence clearly and remain
+  read-only in this slice. Later API work may replace local data with durable
+  run records without changing the user-facing trust model.
