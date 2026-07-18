@@ -1,195 +1,25 @@
 import { useEffect, useState } from "react";
-import {
-  Badge,
-  Button,
-  Card,
-  CardHeader,
-  Divider,
-  Tab,
-  TabList,
-  Text,
-} from "@fluentui/react-components";
-import {
-  ArrowRight20Regular,
-  BranchFork20Regular,
-  CheckmarkCircle20Filled,
-  Code20Regular,
-  Database20Regular,
-  DocumentBulletList20Regular,
-  ShieldCheckmark20Filled,
-  Warning20Regular,
-} from "@fluentui/react-icons";
+import { Badge, Card, CardHeader, Tab, TabList, Text } from "@fluentui/react-components";
+import { CheckmarkCircle20Filled, DocumentBulletList20Regular, ShieldCheckmark20Filled, Warning20Regular } from "@fluentui/react-icons";
 import staticRun from "virtual:foundry-run";
 
-type View = "overview" | "evidence" | "memory";
-type RunProjection = typeof staticRun;
+type View = "story" | "review" | "memory" | "evidence";
+type Run = typeof staticRun;
 
 export function App() {
-  const [view, setView] = useState<View>("overview");
-  const [evidenceOpen, setEvidenceOpen] = useState(false);
-  const [liveRun, setLiveRun] = useState(staticRun);
-
-  useEffect(() => {
-    void fetch("/api/runs/RUN-PAY-17-001")
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Run evidence is unavailable.")))
-      .then((projection) => setLiveRun(projection))
-      .catch(() => undefined);
-  }, []);
-  const run = liveRun;
-
-  return (
-    <main className="app-shell">
-      <aside className="sidebar" aria-label="Foundry navigation">
-        <div className="brand">
-          <span className="brand-mark">CF</span>
-          <span>Codex Foundry</span>
-        </div>
-        <nav className="nav-list" aria-label="Run sections">
-          <button className={view === "overview" ? "nav-item active" : "nav-item"} onClick={() => setView("overview")}>Run overview</button>
-          <button className={view === "evidence" ? "nav-item active" : "nav-item"} onClick={() => setView("evidence")}>Proof evidence</button>
-          <button className={view === "memory" ? "nav-item active" : "nav-item"} onClick={() => setView("memory")}>Engineering memory</button>
-        </nav>
-        <div className="sidebar-foot">
-          <Text size={200}>Local fixture only</Text>
-          <Text size={200}>No production access</Text>
-        </div>
-      </aside>
-
-      <section className="workspace">
-        <header className="topbar">
-          <div>
-            <Text className="breadcrumb" size={200}>Runs / {run.taskId}</Text>
-            <h1>{run.title}</h1>
-          </div>
-          <Badge appearance="filled" color="success" icon={<CheckmarkCircle20Filled />}>{run.status} with memory</Badge>
-        </header>
-
-        <section className="run-banner" aria-label="Current run result">
-          <div className="banner-icon"><ShieldCheckmark20Filled /></div>
-          <div>
-            <Text weight="semibold">PAY-17 repaired, verified, and saved as engineering memory.</Text>
-            <Text block size={300}>The same regression was deliberately reintroduced in a disposable candidate and the proof blocked it.</Text>
-          </div>
-          <Button appearance="primary" icon={<DocumentBulletList20Regular />} onClick={() => setEvidenceOpen((open) => !open)}>
-            {evidenceOpen ? "Hide evidence" : "Open evidence"}
-          </Button>
-        </section>
-
-        <TabList selectedValue={view} onTabSelect={(_, data) => setView(data.value as View)} aria-label="Foundry dashboard view">
-          <Tab value="overview">Overview</Tab>
-          <Tab value="evidence">Evidence</Tab>
-          <Tab value="memory">Memory</Tab>
-        </TabList>
-
-        {view === "overview" && <Overview run={run} evidenceOpen={evidenceOpen} onOpenEvidence={() => setEvidenceOpen(true)} />}
-        {view === "evidence" && <Evidence run={run} />}
-        {view === "memory" && <Memory run={run} />}
-      </section>
-    </main>
-  );
+  const [view, setView] = useState<View>("story");
+  const [run, setRun] = useState<Run>(staticRun);
+  useEffect(() => { void fetch("/api/runs/RUN-PAY-17-001").then((r) => r.ok ? r.json() : Promise.reject()).then(setRun).catch(() => undefined); }, []);
+  return <main className="app-shell"><aside className="sidebar"><div className="brand"><span className="brand-mark">CF</span><span>Codex Foundry</span></div><Text size={200}>Proof system · local fixture</Text><div className="sidebar-foot"><Text size={200}>Verifier-owned evidence</Text><Text size={200}>No production authority</Text></div></aside><section className="workspace">
+    <header className="topbar"><div><Text className="breadcrumb" size={200}>Run / RUN-PAY-17-001 / {run.schemaVersion}</Text><h1>{run.title}</h1></div><Badge appearance="filled" color="success" icon={<CheckmarkCircle20Filled />}>Independent verification: {run.status}</Badge></header>
+    <section className="run-banner"><div className="banner-icon"><ShieldCheckmark20Filled /></div><div><Text weight="semibold">One duplicate-charge defect was repaired, independently proven, and made reusable.</Text><Text block size={300}>The deliberate retry-key regression was later blocked by the unchanged PAY-17 proof.</Text></div></section>
+    <TabList selectedValue={view} onTabSelect={(_, data) => setView(data.value as View)} aria-label="Foundry proof views"><Tab value="story">Proof story</Tab><Tab value="review">Review</Tab><Tab value="memory">Memory Pack</Tab><Tab value="evidence">Evidence</Tab></TabList>
+    {view === "story" && <Story run={run} />}{view === "review" && <Review run={run} />}{view === "memory" && <Memory run={run} />}{view === "evidence" && <Evidence run={run} />}
+  </section></main>;
 }
 
-function Overview({ run, evidenceOpen, onOpenEvidence }: { run: RunProjection; evidenceOpen: boolean; onOpenEvidence: () => void }) {
-  return (
-    <div className="content-grid">
-      <section className="main-column">
-        <Card className="panel proof-panel">
-          <CardHeader header={<Text weight="semibold">Proof chain</Text>} description="Requirement, decision, code, executable proof, and saved regression evaluation." />
-          <div className="proof-graph" aria-label="PAY-17 proof graph">
-            <GraphNode label="PAY-17" caption="Requirement" tone="amber" />
-            <GraphLine />
-            <GraphNode label="ADR-001" caption="Preserve retry key" tone="neutral" />
-            <GraphLine />
-            <GraphNode label="2a5d01f" caption="Approved repair" tone="neutral" />
-            <GraphLine />
-            <GraphNode label="PROOF-001" caption="One payment" tone="green" />
-            <GraphLine />
-            <GraphNode label="EVAL-001" caption="Regression blocked" tone="green" />
-          </div>
-          <div className="proof-note"><Code20Regular /> <Text size={300}>The unit proof did not change during repair or replay.</Text></div>
-        </Card>
-
-        <Card className="panel">
-          <CardHeader header={<Text weight="semibold">Execution timeline</Text>} description="A single high-risk payment repair, bounded by human approval and independent verification." />
-          <ol className="timeline">
-            {run.timeline.map(([title, detail], index) => (
-              <li key={title}>
-                <span className="timeline-index">{String(index + 1).padStart(2, "0")}</span>
-                <div><Text weight="semibold">{title}</Text><Text block size={300}>{detail}</Text></div>
-              </li>
-            ))}
-          </ol>
-        </Card>
-      </section>
-
-      <aside className="rail">
-        <Card className="panel verdict-panel">
-          <CardHeader header={<Text weight="semibold">Verifier verdict</Text>} />
-          <Text className="verdict">Verified</Text>
-          <Text size={300}>Baseline failure and candidate success were independently recorded.</Text>
-          <Divider />
-          <div className="mini-metric"><span>Changed paths</span><strong>{run.changedPaths.length}</strong></div>
-          <div className="mini-metric"><span>Proof commands</span><strong>4</strong></div>
-          <div className="mini-metric"><span>Vault revisions</span><strong>{run.vaultRevisionCount}</strong></div>
-          <Button appearance="secondary" icon={<ArrowRight20Regular />} onClick={onOpenEvidence}>Inspect proof</Button>
-        </Card>
-
-        <Card className="panel regression-panel">
-          <CardHeader header={<Text weight="semibold">Regression replay</Text>} />
-          <div className="warning-line"><Warning20Regular /><Text weight="semibold">Blocked before review</Text></div>
-          <Text size={300}>Only the retry-key mutation was restored. The unchanged PAY-17 proof failed with two payments.</Text>
-        </Card>
-
-        {evidenceOpen && <Evidence run={run} compact />}
-      </aside>
-    </div>
-  );
-}
-
-function Evidence({ run, compact = false }: { run: RunProjection; compact?: boolean }) {
-  return (
-    <Card className={compact ? "panel evidence-panel compact" : "panel evidence-panel"}>
-      <CardHeader header={<Text weight="semibold">Command evidence</Text>} description={compact ? undefined : "Verifier-owned outputs. Implementer narration is never proof."} />
-      <div className="evidence-list">
-        {run.commandEvidence.map(([label, command, status, detail]) => (
-          <div className="evidence-row" key={label}>
-            <div><Text weight="semibold">{label}</Text><code>{command}</code></div>
-            <div className={status === "Blocked" ? "status blocked" : status.startsWith("Failed") ? "status expected" : "status pass"}>{status}</div>
-            {!compact && <Text size={300}>{detail}</Text>}
-          </div>
-        ))}
-      </div>
-    </Card>
-  );
-}
-
-function Memory({ run }: { run: RunProjection }) {
-  return (
-    <div className="memory-layout">
-      <Card className="panel memory-lead">
-        <CardHeader header={<Text weight="semibold">Engineering memory written after review</Text>} description="The durable vault remains Markdown-first and each note is tied to verified evidence." />
-        <div className="memory-stats">
-          <div><Database20Regular /><strong>INC-001</strong><span>Incident</span></div>
-          <div><BranchFork20Regular /><strong>ADR-001</strong><span>Decision</span></div>
-          <div><ShieldCheckmark20Filled /><strong>PROOF-001</strong><span>{run.proofContract}</span></div>
-          <div><DocumentBulletList20Regular /><strong>{run.evaluationId}</strong><span>{run.regressionStatus.replace("_", " ")}</span></div>
-        </div>
-      </Card>
-      <Card className="panel">
-        <CardHeader header={<Text weight="semibold">Context boundary</Text>} />
-        <Text size={300}>The Planner and Implementer receive the measured Memory Pack, not the raw vault. Stale and omitted notes stay out of their context.</Text>
-        <Divider />
-        <div className="memory-detail"><Text weight="semibold">Direct pack sources</Text><Text block size={300}>ADR-001 and PROOF-001</Text></div>
-        <div className="memory-detail"><Text weight="semibold">Durable commit</Text><code>{run.approvedCommit}</code></div>
-      </Card>
-    </div>
-  );
-}
-
-function GraphNode({ label, caption, tone }: { label: string; caption: string; tone: "amber" | "neutral" | "green" }) {
-  return <div className={`graph-node ${tone}`}><strong>{label}</strong><span>{caption}</span></div>;
-}
-
-function GraphLine() {
-  return <span className="graph-line" aria-hidden="true" />;
-}
+function Story({ run }: { run: Run }) { return <div className="content-grid"><section className="main-column"><Card className="panel proof-panel"><CardHeader header={<Text weight="semibold">Causal proof graph</Text>} description="Edges show why the next artifact is allowed, not merely what happened next."/><div className="proof-graph" aria-label="Causal PAY-17 proof graph">{run.proofGraph.nodes.map((node, i) => <><div className={`graph-node ${node.status === "blocked" ? "amber" : node.status === "verified" ? "green" : "neutral"}`} key={node.id}><strong>{node.label}</strong><span>{node.kind} · {node.status}</span></div>{i < run.proofGraph.nodes.length - 1 && <span className="graph-line" aria-hidden="true" />}</>)}</div><div className="proof-note"><DocumentBulletList20Regular /><Text size={300}>The proof graph is evidence-derived. It grants no action authority.</Text></div></Card><Timeline run={run} /></section><aside className="rail"><Card className="panel verdict-panel"><CardHeader header={<Text weight="semibold">What happened?</Text>} /><Text className="verdict">Verified repair</Text><Text size={300}>{run.proofContract}. The baseline failed; the isolated candidate passed; a later replay was blocked.</Text>{run.metrics.map((metric) => <div className="mini-metric" key={metric.label}><span title={metric.detail}>{metric.label}</span><strong>{metric.value}</strong></div>)}</Card><Card className="panel regression-panel"><CardHeader header={<Text weight="semibold">Regression evaluation</Text>} /><div className="warning-line"><Warning20Regular /><Text weight="semibold">{run.regressionStatus}</Text></div><Text size={300}>Only the causal retry-key mutation was restored in a disposable candidate. The proof was unchanged.</Text></Card></aside></div>; }
+function Timeline({ run }: { run: Run }) { return <Card className="panel"><CardHeader header={<Text weight="semibold">Engineering incident narrative</Text>} description="One bounded task, from issue intake to regression protection."/><ol className="timeline">{run.timeline.map(([title, detail], i) => <li key={title}><span className="timeline-index">{String(i + 1).padStart(2, "0")}</span><div><Text weight="semibold">{title}</Text><Text block size={300}>{detail}</Text></div></li>)}</ol></Card>; }
+function Review({ run }: { run: Run }) { return <div className="review-grid"><Card className="panel"><CardHeader header={<Text weight="semibold">Reviewer decision record</Text>} description="The human approved a candidate commit only. No merge, deployment, or implied vault permission."/><section className="review-section"><Text weight="semibold">What changed</Text><Text block size={300}>{run.review.diffSummary}</Text><ul>{run.review.changedPaths.map((path) => <li key={path}><code>{path}</code></li>)}</ul></section><section className="review-section"><Text weight="semibold">Why this is sufficient</Text><Text block size={300}>Proof contract: <code>{run.review.proofContract}</code></Text><Text block size={300}>Verifier evidence includes baseline failure, build, health suite, unchanged PAY-17 unit proof, and browser proof.</Text></section><section className="review-section"><Text weight="semibold">Known limitations</Text><ul>{run.review.limitations.map((item) => <li key={item}>{item}</li>)}</ul></section></Card><Card className="panel"><CardHeader header={<Text weight="semibold">Vault proposal and approval</Text>} description="This was a separate human-controlled durable-memory decision."/><Text className="verdict">{run.review.vaultDecision}</Text><ul>{run.review.vaultTargets.map((target) => <li key={target}><code>{target}</code></li>)}</ul><Text size={300}>The reviewer can inspect intended durable notes here; Foundry does not expose a write control in this proof viewer.</Text></Card></div>; }
+function Memory({ run }: { run: Run }) { return <div className="memory-layout"><Card className="panel memory-lead"><CardHeader header={<Text weight="semibold">Included Memory Pack notes</Text>} description="Every included note carries provenance. Omitted note bodies are never rendered."/><div className="note-list">{run.memory.included.map((note) => <article className="note-row" key={note.id}><div><strong>{note.id}</strong><span>{note.type}</span></div><Text size={300}><b>Confidence:</b> {note.confidence} · <b>Freshness:</b> {note.freshness}</Text><Text size={300}><b>Selected:</b> {note.reasonSelected}</Text><Text size={300}><b>Verified:</b> {note.verification}</Text><Text size={300}><b>Evidence:</b> {note.evidenceReferences.join(" · ")}</Text></article>)}</div></Card><Card className="panel"><CardHeader header={<Text weight="semibold">Omitted metadata</Text>} description="No omitted bodies cross the context boundary."/><div className="note-list">{run.memory.omitted.map((note) => <article className="note-row omitted" key={note.id}><div><strong>{note.id}</strong><span>{note.type}</span></div><Text size={300}>{note.confidence} · {note.freshness}</Text><Text size={300}>{note.reason}</Text></article>)}</div></Card></div>; }
+function Evidence({ run }: { run: Run }) { return <div className="evidence-stack">{run.evidence.map((item) => <Card className="panel evidence-panel" key={item.id}><CardHeader header={<Text weight="semibold">{item.title}</Text>} description={`${item.kind} · ${item.authority}${item.command ? ` · ${item.command}` : ""}${item.exitCode !== undefined ? ` · exit ${item.exitCode}` : ""}`}/><details><summary>View recorded evidence</summary><pre>{item.content}</pre></details></Card>)}</div>; }

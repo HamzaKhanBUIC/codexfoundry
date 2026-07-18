@@ -77,6 +77,12 @@ code { color: #3f4755; font-family: "Cascadia Code", Consolas, monospace; font-s
 .memory-layout > .panel:last-child { padding-bottom: 18px; }
 .memory-layout > .panel:last-child > .fui-Text { display: block; padding: 8px 18px 18px; color: #556173; }
 .memory-detail { padding: 14px 18px 0; }
+.review-grid { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr); gap:22px; margin-top:20px; }
+.review-section { display:grid; gap:9px; padding:14px 18px; border-top:1px solid #e8ebef; }
+.review-section ul, .panel > ul { margin:0; padding:0 18px 18px 36px; color:#556173; display:grid; gap:7px; }
+.note-list { display:grid; padding:8px 18px 18px; }
+.note-row { display:grid; gap:6px; padding:14px 0; border-bottom:1px solid #e8ebef; }
+.note-row:last-child { border-bottom:0; }.note-row > div { display:flex; gap:8px; align-items:center; }.note-row span { color:#667287; font-size:.78rem; }.note-row.omitted { background:#fafbfc; }.evidence-stack { display:grid; gap:16px; margin-top:20px; }.evidence-stack details { margin:0 18px 18px; }.evidence-stack summary { cursor:pointer; color:#87500d; font-weight:600; }.evidence-stack pre { overflow:auto; padding:14px; background:#202632; color:#e7edf7; border-radius:7px; white-space:pre-wrap; font: .78rem/1.5 "Cascadia Code",Consolas,monospace; }
 
 @media (max-width: 980px) {
   .app-shell { grid-template-columns: 1fr; }
@@ -86,7 +92,7 @@ code { color: #3f4755; font-family: "Cascadia Code", Consolas, monospace; font-s
   .nav-item { text-align: center; }
   .sidebar-foot { display: none; }
   .workspace { padding: 26px 24px 42px; }
-  .content-grid, .memory-layout { grid-template-columns: 1fr; }
+  .content-grid, .memory-layout, .review-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {

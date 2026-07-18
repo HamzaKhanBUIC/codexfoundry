@@ -484,3 +484,21 @@ trade-offs are recorded here.
   the human-approved vault history.
 - **Consequences:** The integration contract selects `ARCH-001` for baseline
   intake and explicitly omits `PROOF-001` as stale. The vault is unchanged.
+
+## ADR-027 — Use one versioned, read-only projection for the proof experience
+
+- **Status:** Accepted
+- **Milestone:** 4, proof experience
+- **Decision:** The dashboard consumes one `FoundryRunProjection` schema
+  (`1.0`) derived from recorded artifacts. It contains causal graph data,
+  review facts, Memory Pack metadata, versioned evidence items, and measured
+  artifact counts.
+- **Why:** Judge-facing claims must have one evidence-derived interpretation;
+  UI components must not independently parse artifacts or invent workflow
+  state.
+- **Alternatives considered:** Per-component artifact reads; a mutable review
+  API; a timeline-only static presentation.
+- **Why rejected:** Direct reads duplicate trust logic; mutable endpoints
+  bypass approval contracts; a timeline cannot explain causal proof.
+- **Consequences:** The proof UI is transparent and read-only. New evidence
+  kinds extend the projection schema and tests; they cannot confer authority.
