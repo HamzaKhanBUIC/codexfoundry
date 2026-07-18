@@ -334,3 +334,22 @@ trade-offs are recorded here.
 - **Consequences:** Later evidence can reference `2a5d01f`; the candidate may
   be disposed after its approved artifacts are persisted, while the baseline
   remains available for regression replay.
+
+## ADR-019 — Stage memory revisions against existing stable IDs before vault write
+
+- **Status:** Accepted
+- **Milestone:** Gate 3 staged memory proposal
+- **Decision:** Stage complete revisions of the existing PAY-17 Incident, ADR,
+  Proof, and Evaluation notes outside the vault, preserving their IDs and
+  recording typed evidence against the approved candidate commit.
+- **Why:** The prior notes document the defective baseline. Revising them with
+  explicit fail-before/pass-after evidence retains that history while keeping
+  retrieval fresh for the repaired commit; duplicate parallel notes would add
+  graph noise and ambiguous authority.
+- **Alternatives considered:** Add four new IDs; overwrite the vault directly;
+  leave baseline notes unchanged.
+- **Why rejected:** New IDs fragment one incident; direct writes bypass human
+  approval; unchanged notes become stale for future repaired-commit tasks.
+- **Consequences:** A separate human approval must authorize copying the four
+  exact staged files into their manifest targets. The deliberate regression
+  remains a declared future evaluation until it produces its own evidence.

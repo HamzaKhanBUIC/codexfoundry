@@ -1,0 +1,13 @@
+{
+  "runId": "RUN-PAY-17-001",
+  "status": "staged_pending_human_vault_approval",
+  "approvedCandidateCommit": "2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b",
+  "baselineCommit": "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+  "targets": [
+    "vault/incidents/INC-001-pay-17-duplicate-charge.md",
+    "vault/adrs/ADR-001-payment-retry-idempotency.md",
+    "vault/proofs/PROOF-001-pay-17-single-payment.md",
+    "vault/evaluations/EVAL-001-pay-17-regression.md"
+  ],
+  "approvalRequired": "Explicit human approval is required before copying any staged document into vault/."
+}
