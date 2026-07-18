@@ -1,0 +1,16 @@
+# The deterministic checkout fixture is an independent, frozen repository.
+demo-store/
+
+# Reproducible local dependencies and generated artifacts.
+**/node_modules/
+**/dist/
+**/test-results/
+**/playwright-report/
+
+# Local-only configuration and diagnostics.
+.env
+.env.*
+*.log
+
+# Isolated implementation worktrees live alongside the source repository.
+.codex-worktrees/
