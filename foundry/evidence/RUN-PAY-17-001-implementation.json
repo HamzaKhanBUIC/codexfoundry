@@ -1,0 +1,45 @@
+{
+  "runId": "RUN-PAY-17-001",
+  "planId": "PLAN-PAY-17-001",
+  "taskId": "PAY-17",
+  "status": "implementation_complete_unverified",
+  "candidate": {
+    "path": "C:\\Users\\Hamza Imran\\Desktop\\OpenAI Build Week\\.foundry-worktrees\\RUN-PAY-17-001",
+    "baselineCommit": "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+    "changedPaths": [
+      "src/services/checkout-service.ts",
+      "tests/browser/pay-17.spec.ts"
+    ],
+    "diffStat": "2 files changed, 8 insertions(+), 13 deletions(-)"
+  },
+  "implementerReport": {
+    "changeSummary": "Preserved the caller's idempotency key through the retry and updated the browser contract from two captures to one capture.",
+    "unresolvedRisks": [
+      "This is an implementer artifact, not independent proof. The verifier must rerun every proof command and inspect this candidate diff."
+    ],
+    "confidence": "medium"
+  },
+  "commandLogs": [
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "output": "vite build completed successfully; 29 modules transformed."
+    },
+    {
+      "command": "npm run test:health",
+      "exitCode": 0,
+      "output": "2 test files passed; 2 tests passed."
+    },
+    {
+      "command": "npm run test:pay-17",
+      "exitCode": 0,
+      "output": "tests/payment-service.pay-17.test.ts passed; 1 test passed."
+    },
+    {
+      "command": "npm run test:browser",
+      "exitCode": 0,
+      "output": "Stable Google Chrome fallback selected; PAY-17 browser scenario captures one payment after retry; 1 passed."
+    }
+  ],
+  "verificationAuthority": "deferred_to_independent_verifier"
+}

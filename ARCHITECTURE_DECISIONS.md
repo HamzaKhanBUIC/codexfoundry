@@ -263,3 +263,21 @@ trade-offs are recorded here.
   evidence, permits authority leakage, and weakens a judge-visible trust story.
 - **Consequences:** The next execution task must persist raw command/diff
   artifacts and the later Verifier alone may determine PAY-17 proof status.
+
+## ADR-015 — Preserve the repair as a dirty candidate until independent verification
+
+- **Status:** Accepted
+- **Milestone:** Gate 3 candidate implementation
+- **Decision:** Keep the PAY-17 repair as an uncommitted diff in a detached,
+  Foundry-owned candidate worktree and record the implementer's command results
+  as an explicitly unverified artifact.
+- **Why:** The frozen baseline must remain reproducible, and an implementation
+  result must not look like verified evidence or an approved merge merely
+  because its own commands passed.
+- **Alternatives considered:** Modify the frozen fixture; commit and treat the
+  candidate as approved; discard all execution output until the verifier runs.
+- **Why rejected:** The first destroys the demo baseline; the second conflates
+  implementation with approval; the third loses useful auditability for the
+  verifier and judge timeline.
+- **Consequences:** G3D must rerun the proof independently against the same
+  candidate. Only its evidence may advance the run to review.
