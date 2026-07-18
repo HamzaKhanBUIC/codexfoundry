@@ -62,8 +62,8 @@ export function buildMemoryGraph(documents: MemoryDocument[]): MemoryGraph {
     }
 
     for (const evidence of document.evidence) {
-      const id = `evidence:${evidence}`;
-      addNode(nodes, { id, kind: "evidence", label: evidence });
+      const id = `evidence:${evidence.reference}`;
+      addNode(nodes, { id, kind: "evidence", label: evidence.reference });
       addEdge(edges, { from: document.id, to: id, relation: "evidenced-by" });
     }
 

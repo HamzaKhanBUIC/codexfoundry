@@ -137,12 +137,30 @@ describe("Memory Pack compiler", () => {
       id: "INC-000",
       title: staleIncident.title,
       freshness: "stale",
-      confidenceScore: 0.26,
+      confidenceScore: 0.25,
       reason: "excluded because its verified knowledge is stale",
     });
     expect(JSON.stringify(pack)).not.toContain(staleIncident.body);
     expect(markdown).not.toContain(staleIncident.body);
     expect(pack.estimatedTokens).toBe(estimateRenderedMemoryPackTokens(pack));
+  });
+
+  it("excludes commit-mismatched memory when the task identifies its repository baseline", async () => {
+    const vault = await loadVault(vaultPath);
+    const pack = compileMemoryPack(vault, {
+      id: "PAY-17",
+      title: "Duplicate charge after checkout retry",
+      services: ["checkout-service", "payment-gateway"],
+      repositoryCommit: "different-commit",
+      tokenBudget: 12_000,
+    }, { freshnessPolicy: policy, generatedAt: new Date("2026-07-18T12:00:00Z") });
+
+    expect(pack.sources).toHaveLength(0);
+    expect(pack.omittedSources).toContainEqual(expect.objectContaining({
+      id: "ARCH-001",
+      freshness: "stale",
+      reason: expect.stringContaining("stale"),
+    }));
   });
 
   it("keeps the pack within a constrained context budget and reports omissions", async () => {

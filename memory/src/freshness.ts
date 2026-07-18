@@ -30,6 +30,10 @@ export function assessFreshness(
     return "stale";
   }
 
+  if (policy.repositoryCommit && document.verifiedCommit !== policy.repositoryCommit) {
+    return "stale";
+  }
+
   const ageMs = Math.max(0, policy.referenceTime.getTime() - document.verifiedAt.getTime());
   const ageDays = ageMs / (1000 * 60 * 60 * 24);
 
@@ -48,7 +52,7 @@ export function calculateConfidence(
   document: MemoryDocument,
   freshness: FreshnessStatus,
 ): number {
-  const evidenceBonus = Math.min(document.evidence.length * 0.04, 0.12);
+  const evidenceBonus = Math.min(document.evidence.filter((evidence) => evidence.verified).length * 0.04, 0.12);
   const commitBonus = document.verifiedCommit ? 0.04 : 0;
   const timestampBonus = document.verifiedAt ? 0.02 : 0;
   const raw = Math.min(1, confidenceBase[document.confidence] + evidenceBonus + commitBonus + timestampBonus);

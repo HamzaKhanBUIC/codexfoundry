@@ -43,7 +43,7 @@ export function scoreRelevance(document: MemoryDocument, task: TaskInput): Relev
     reasons.push(`matches label ${labels.join(", ")}`);
   }
 
-  const paths = overlap(document.evidence, task.paths ?? []);
+  const paths = overlap(document.evidence.map((evidence) => evidence.reference), task.paths ?? []);
   if (paths.length > 0) {
     score += Math.min(0.2, paths.length * 0.1);
     reasons.push(`references path ${paths.join(", ")}`);

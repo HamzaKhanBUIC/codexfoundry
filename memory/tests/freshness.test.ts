@@ -19,16 +19,30 @@ describe("freshness and confidence", () => {
 
     expect(staleIncident).toBeDefined();
     expect(assessFreshness(staleIncident!, policy)).toBe("stale");
-    expect(calculateConfidence(staleIncident!, "stale")).toBe(0.26);
+    expect(calculateConfidence(staleIncident!, "stale")).toBe(0.25);
   });
 
-  it("calculates evidence-backed confidence deterministically", async () => {
+  it("awards confidence only to typed, verified evidence", async () => {
     const index = await loadVault(vaultPath);
     const architecture = index.byId.get("ARCH-001");
 
     expect(architecture).toBeDefined();
     const assessed = assessDocument(architecture!, policy);
     expect(assessed.freshness).toBe("fresh");
-    expect(assessed.confidenceScore).toBe(0.96);
+    expect(assessed.confidenceScore).toBe(0.88);
+    expect(calculateConfidence({
+      ...architecture!,
+      evidence: [{ kind: "test", reference: "tests/checkout-retry.test.ts", verified: true }],
+    }, "fresh")).toBe(0.92);
+  });
+
+  it("marks knowledge stale when its verified commit is absent or differs from the task repository", async () => {
+    const index = await loadVault(vaultPath);
+    const architecture = index.byId.get("ARCH-001")!;
+    const commitPolicy = { ...policy, repositoryCommit: "different-commit" };
+
+    expect(assessFreshness(architecture, commitPolicy)).toBe("stale");
+    expect(assessFreshness({ ...architecture, verifiedCommit: undefined }, commitPolicy)).toBe("stale");
+    expect(assessFreshness(architecture, { ...policy, repositoryCommit: architecture.verifiedCommit })).toBe("fresh");
   });
 });

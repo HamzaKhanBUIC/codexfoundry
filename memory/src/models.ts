@@ -14,6 +14,15 @@ export type ConfidenceLevel = (typeof CONFIDENCE_LEVELS)[number];
 
 export type FreshnessStatus = "fresh" | "aging" | "stale" | "unverified";
 
+export const EVIDENCE_KINDS = ["test", "browser", "source", "issue", "commit", "other", "legacy"] as const;
+export type EvidenceKind = (typeof EVIDENCE_KINDS)[number];
+
+export interface EvidenceReference {
+  kind: EvidenceKind;
+  reference: string;
+  verified: boolean;
+}
+
 export interface MemoryFrontmatter {
   id: string;
   type: MemoryDocumentType;
@@ -24,7 +33,7 @@ export interface MemoryFrontmatter {
   tags: string[];
   aliases: string[];
   links: string[];
-  evidence: string[];
+  evidence: EvidenceReference[];
   verifiedCommit?: string;
   verifiedAt?: Date;
   confidence: ConfidenceLevel;
@@ -42,6 +51,7 @@ export interface FreshnessPolicy {
   referenceTime: Date;
   maxAgeDays: number;
   agingThreshold: number;
+  repositoryCommit?: string;
 }
 
 export interface AssessedDocument extends MemoryDocument {
@@ -57,6 +67,7 @@ export interface TaskInput {
   services?: string[];
   requirements?: string[];
   paths?: string[];
+  repositoryCommit?: string;
   explicitDocumentIds?: string[];
   tokenBudget?: number;
   includeStale?: boolean;

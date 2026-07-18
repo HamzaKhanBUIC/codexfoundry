@@ -47,6 +47,12 @@ If the requested budget cannot accommodate even the safe payload metadata, the
 compiler fails closed with the measured minimum rather than returning an
 over-budget context package.
 
+Evidence references are typed as `kind`, `reference`, and `verified`. Legacy
+string evidence is readable but receives no confidence credit. A task may
+supply `repositoryCommit`; documents verified against a missing or different
+commit are then stale. Blank optional YAML values in draft templates load as
+absent values, while drafts remain unverified and excluded by default.
+
 The compiler is deterministic. GPT-assisted ranking mentioned in the product
 architecture remains a later, bounded enhancement; it cannot override the
 freshness, confidence, provenance, or budget gates implemented here.

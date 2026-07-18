@@ -49,6 +49,13 @@ and every omission. If even this safe payload exceeds the requested budget, the
 compiler fails closed with the measured minimum instead of returning an
 over-budget pack.
 
+Evidence is structured as a typed reference with an explicit verification flag;
+only verified typed references increase confidence. Legacy string evidence is
+readable for migration but is unverified. A task repository commit is a
+freshness input: notes lacking a matching `verified_commit` become stale.
+Draft templates may contain blank optional YAML values; they load safely but
+remain unverified and excluded from normal packs.
+
 ## Forward compatibility
 
 Later Foundry services can persist a rendered pack and its metadata in SQLite,

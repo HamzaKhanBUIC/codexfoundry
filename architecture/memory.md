@@ -22,7 +22,9 @@ type: proof
 services: [checkout-api, payments-api]
 requirements: [PAY-17]
 evidence:
-  - tests/checkout-retry.spec.ts
+  - kind: test
+    reference: tests/checkout-retry.spec.ts
+    verified: true
 verified_commit: abc123
 verified_at: 2026-07-18T00:00:00Z
 confidence: verified
@@ -38,6 +40,11 @@ Selection is deterministic first, model-assisted second:
 3. Exclude notes marked stale, unverified, or outside the token budget unless explicitly requested.
 4. Ask GPT-5.6 to rank remaining candidates and provide inclusion reasons.
 5. Render a human-reviewable pack with estimated tokens, source confidence, and provenance.
+
+Evidence added by new notes is typed: `kind`, `reference`, and `verified` are
+required. Legacy string evidence remains readable for migration only and does
+not increase confidence. When the task supplies its repository commit, notes
+verified against a missing or different commit are stale.
 
 ## Context-efficiency measurement
 

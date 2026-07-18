@@ -133,4 +133,59 @@ confidence: verified
       await rm(temporaryVault, { recursive: true, force: true });
     }
   });
+
+  it("loads typed evidence and blank optional draft-template fields safely", async () => {
+    const temporaryVault = await mkdtemp(path.join(os.tmpdir(), "codex-foundry-vault-"));
+    try {
+      await writeFile(path.join(temporaryVault, "PROOF-020.md"), `---
+id: PROOF-020
+type: proof
+title: Typed proof
+evidence:
+  - kind: test
+    reference: tests/checkout-retry.test.ts
+    verified: true
+verified_commit: fixture-commit
+verified_at: 2026-07-18T00:00:00Z
+confidence: verified
+---
+`, "utf8");
+      await writeFile(path.join(temporaryVault, "ADR-020.md"), `---
+id: ADR-020
+type: adr
+title: Draft decision
+summary:
+aliases:
+links:
+evidence:
+verified_commit:
+verified_at:
+confidence: draft
+staleness:
+---
+`, "utf8");
+
+      const index = await loadVault(temporaryVault);
+      expect(index.byId.get("PROOF-020")?.evidence).toEqual([
+        { kind: "test", reference: "tests/checkout-retry.test.ts", verified: true },
+      ]);
+      expect(index.byEvidence.get("tests/checkout-retry.test.ts")?.map((document) => document.id)).toEqual(["PROOF-020"]);
+      expect(index.graph.edges).toContainEqual({
+        from: "PROOF-020",
+        to: "evidence:tests/checkout-retry.test.ts",
+        relation: "evidenced-by",
+      });
+      expect(index.byId.get("ADR-020")).toMatchObject({
+        summary: undefined,
+        aliases: [],
+        links: [],
+        evidence: [],
+        verifiedCommit: undefined,
+        verifiedAt: undefined,
+        confidence: "draft",
+      });
+    } finally {
+      await rm(temporaryVault, { recursive: true, force: true });
+    }
+  });
 });

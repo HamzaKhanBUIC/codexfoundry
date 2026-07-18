@@ -4,12 +4,14 @@ import matter from "gray-matter";
 import { buildMemoryGraph } from "./graph.js";
 import type {
   ConfidenceLevel,
+  EvidenceKind,
+  EvidenceReference,
   MemoryDocument,
   MemoryDocumentType,
   MemoryFrontmatter,
   VaultIndex,
 } from "./models.js";
-import { CONFIDENCE_LEVELS, MEMORY_DOCUMENT_TYPES } from "./models.js";
+import { CONFIDENCE_LEVELS, EVIDENCE_KINDS, MEMORY_DOCUMENT_TYPES } from "./models.js";
 
 function asString(value: unknown, field: string, filePath: string): string {
   if (typeof value !== "string" || value.trim().length === 0) {
@@ -19,7 +21,7 @@ function asString(value: unknown, field: string, filePath: string): string {
 }
 
 function asStringArray(value: unknown, field: string, filePath: string): string[] {
-  if (value === undefined) {
+  if (value === undefined || value === null) {
     return [];
   }
   if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
@@ -28,8 +30,15 @@ function asStringArray(value: unknown, field: string, filePath: string): string[
   return [...new Set(value.map((item) => item.trim()).filter(Boolean))];
 }
 
+function optionalString(value: unknown, field: string, filePath: string): string | undefined {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+  return asString(value, field, filePath);
+}
+
 function optionalDate(value: unknown, field: string, filePath: string): Date | undefined {
-  if (value === undefined) {
+  if (value === undefined || value === null || value === "") {
     return undefined;
   }
   if (value instanceof Date && !Number.isNaN(value.getTime())) {
@@ -43,6 +52,39 @@ function optionalDate(value: unknown, field: string, filePath: string): Date | u
   return date;
 }
 
+function asEvidenceReferences(value: unknown, field: string, filePath: string): EvidenceReference[] {
+  if (value === undefined || value === null) {
+    return [];
+  }
+  if (!Array.isArray(value)) {
+    throw new Error(`${filePath}: frontmatter field '${field}' must be an evidence array.`);
+  }
+  return value.map((item, index) => {
+    if (typeof item === "string") {
+      return { kind: "legacy", reference: asString(item, `${field}[${index}]`, filePath), verified: false };
+    }
+    if (typeof item !== "object" || item === null || Array.isArray(item)) {
+      throw new Error(`${filePath}: evidence entry '${field}[${index}]' must be a string or object.`);
+    }
+    const entry = item as Record<string, unknown>;
+    const kind = asString(entry.kind, `${field}[${index}].kind`, filePath) as EvidenceKind;
+    if (!EVIDENCE_KINDS.includes(kind)) {
+      throw new Error(`${filePath}: unsupported evidence kind '${kind}'.`);
+    }
+    if (kind === "legacy") {
+      throw new Error(`${filePath}: typed evidence cannot use the reserved 'legacy' kind.`);
+    }
+    if (typeof entry.verified !== "boolean") {
+      throw new Error(`${filePath}: evidence entry '${field}[${index}].verified' must be boolean.`);
+    }
+    return {
+      kind,
+      reference: asString(entry.reference, `${field}[${index}].reference`, filePath),
+      verified: entry.verified,
+    };
+  });
+}
+
 function wikiLinks(body: string): string[] {
   return [...new Set([...body.matchAll(/\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]/g)].map((match) => match[1].trim()))];
 }
@@ -54,7 +96,7 @@ function estimateTokens(value: string): number {
 function parseFrontmatter(data: Record<string, unknown>, filePath: string): MemoryFrontmatter {
   const type = asString(data.type, "type", filePath) as MemoryDocumentType;
   const confidence = asString(data.confidence, "confidence", filePath) as ConfidenceLevel;
-  const staleness = data.staleness === undefined ? undefined : asString(data.staleness, "staleness", filePath);
+  const staleness = optionalString(data.staleness, "staleness", filePath);
 
   if (!MEMORY_DOCUMENT_TYPES.includes(type)) {
     throw new Error(`${filePath}: unsupported memory document type '${type}'.`);
@@ -70,14 +112,14 @@ function parseFrontmatter(data: Record<string, unknown>, filePath: string): Memo
     id: asString(data.id, "id", filePath),
     type,
     title: asString(data.title, "title", filePath),
-    summary: data.summary === undefined ? undefined : asString(data.summary, "summary", filePath),
+    summary: optionalString(data.summary, "summary", filePath),
     services: asStringArray(data.services, "services", filePath),
     requirements: asStringArray(data.requirements, "requirements", filePath),
     tags: asStringArray(data.tags, "tags", filePath),
     aliases: asStringArray(data.aliases, "aliases", filePath),
     links: asStringArray(data.links, "links", filePath),
-    evidence: asStringArray(data.evidence, "evidence", filePath),
-    verifiedCommit: data.verified_commit === undefined ? undefined : asString(data.verified_commit, "verified_commit", filePath),
+    evidence: asEvidenceReferences(data.evidence, "evidence", filePath),
+    verifiedCommit: optionalString(data.verified_commit, "verified_commit", filePath),
     verifiedAt: optionalDate(data.verified_at, "verified_at", filePath),
     confidence,
     declaredStaleness: staleness,
@@ -146,7 +188,7 @@ export async function loadVault(vaultPath: string): Promise<VaultIndex> {
     byId,
     byService: buildRelationIndex(sortedDocuments, (document) => document.services),
     byRequirement: buildRelationIndex(sortedDocuments, (document) => document.requirements),
-    byEvidence: buildRelationIndex(sortedDocuments, (document) => document.evidence),
+    byEvidence: buildRelationIndex(sortedDocuments, (document) => document.evidence.map((evidence) => evidence.reference)),
     byTag: buildRelationIndex(sortedDocuments, (document) => document.tags),
     graph: buildMemoryGraph(sortedDocuments),
   };

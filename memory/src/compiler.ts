@@ -56,7 +56,8 @@ function candidateObligations(document: AssessedDocument, task: TaskInput, fallb
     }
   }
   const requestedPaths = new Set((task.paths ?? []).map(normalize));
-  for (const sourcePath of document.evidence) {
+  for (const evidence of document.evidence) {
+    const sourcePath = evidence.reference;
     if (requestedPaths.has(normalize(sourcePath))) {
       obligations.add(`path:${normalize(sourcePath)}`);
     }
@@ -123,7 +124,10 @@ export function compileMemoryPack(
   task: TaskInput,
   options: CompileOptions = {},
 ): MemoryPack {
-  const policy = options.freshnessPolicy ?? DEFAULT_FRESHNESS_POLICY;
+  const basePolicy = options.freshnessPolicy ?? DEFAULT_FRESHNESS_POLICY;
+  const policy = task.repositoryCommit
+    ? { ...basePolicy, repositoryCommit: task.repositoryCommit }
+    : basePolicy;
   const assessed = index.documents.map((document) => assessDocument(document, policy));
   const directResults = new Map(assessed.map((document) => [document.id, scoreRelevance(document, task)]));
   const omitted: OmittedSourceReference[] = [];
