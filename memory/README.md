@@ -27,6 +27,12 @@ npm test
 7. Render the exact selected source context as reviewable Markdown, while
    representing every omitted source with bodyless reference metadata only.
 
+Selection uses greedy minimum coverage for explicit document IDs, requirements,
+services, and evidence paths. A relevant Proof is retained as an executable
+trust anchor. Graph expansion is limited to one outbound explicit Obsidian link
+from selected direct context, and only when that link fills an unmet coverage
+obligation.
+
 ## Memory Pack contract
 
 `compileMemoryPack(index, task)` accepts a task ID, title, optional services,

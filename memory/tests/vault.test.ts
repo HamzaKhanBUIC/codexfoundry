@@ -65,6 +65,9 @@ describe("Obsidian Engineering Vault", () => {
       relation: "addresses",
     });
     expect(index.graph.danglingLinks).toEqual([]);
+    expect(index.graph.outboundLinkedDocumentIds("ADR-001")).toEqual(
+      expect.arrayContaining(["ARCH-001", "INC-001", "PROOF-001"]),
+    );
   });
 
   it("canonicalizes IDs, filenames, and aliases while reporting unresolved links", () => {

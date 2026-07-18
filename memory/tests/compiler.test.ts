@@ -2,7 +2,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { compileMemoryPack } from "../src/compiler.js";
+import { buildMemoryGraph } from "../src/graph.js";
 import { estimateRenderedMemoryPackTokens, renderMemoryPackMarkdown } from "../src/markdown.js";
+import type { MemoryDocument, VaultIndex } from "../src/models.js";
 import { loadVault } from "../src/vault.js";
 
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -12,6 +14,43 @@ const policy = {
   maxAgeDays: 90,
   agingThreshold: 0.75,
 };
+
+function document(
+  id: string,
+  type: MemoryDocument["type"],
+  options: Partial<Pick<MemoryDocument, "body" | "requirements" | "services" | "title" | "wikiLinks">> = {},
+): MemoryDocument {
+  return {
+    id,
+    type,
+    title: options.title ?? id,
+    services: options.services ?? [],
+    requirements: options.requirements ?? [],
+    tags: [],
+    aliases: [],
+    links: [],
+    evidence: [],
+    confidence: "verified",
+    verifiedAt: new Date("2026-07-01T00:00:00Z"),
+    sourcePath: `${id}.md`,
+    body: options.body ?? "",
+    wikiLinks: options.wikiLinks ?? [],
+    estimatedTokens: 10,
+  };
+}
+
+function index(documents: MemoryDocument[]): VaultIndex {
+  return {
+    rootPath: "/synthetic-vault",
+    documents,
+    byId: new Map(documents.map((item) => [item.id, item])),
+    byService: new Map(),
+    byRequirement: new Map(),
+    byEvidence: new Map(),
+    byTag: new Map(),
+    graph: buildMemoryGraph(documents),
+  };
+}
 
 describe("Memory Pack compiler", () => {
   it("selects small, fresh, evidence-backed PAY-17 context and excludes stale memory", async () => {
@@ -27,18 +66,43 @@ describe("Memory Pack compiler", () => {
       tokenBudget: 12_000,
     }, { freshnessPolicy: policy, generatedAt: new Date("2026-07-18T12:00:00Z") });
 
-    expect(pack.sources.map((source) => source.document.id)).toEqual(expect.arrayContaining([
-      "ADR-001",
-      "ARCH-001",
-      "PROOF-001",
-    ]));
+    expect(pack.sources.map((source) => source.document.id)).toEqual(["ARCH-001", "PROOF-001"]);
     expect(pack.sources.map((source) => source.document.id)).not.toContain("INC-000");
+    expect(pack.sources.every((source) => source.inclusionReason.includes("covers"))).toBe(true);
+    expect(pack.omittedSources).toContainEqual(expect.objectContaining({
+      id: "ADR-001",
+      reason: "excluded because it does not add uncovered task coverage",
+    }));
     expect(pack.omittedSources).toContainEqual(expect.objectContaining({
       id: "INC-000",
       reason: expect.stringContaining("stale"),
     }));
     expect(pack.estimatedTokens).toBeLessThanOrEqual(pack.tokenBudget);
     expect(pack.confidenceScore).toBeGreaterThanOrEqual(0.65);
+  });
+
+  it("uses one outbound explicit link to satisfy an unmet proof obligation without admitting redundant links", () => {
+    const pack = compileMemoryPack(index([
+      document("INC-099", "incident", {
+        title: "Payment failure incident",
+        requirements: ["PAY-99"],
+        wikiLinks: ["PROOF-099", "ARCH-099"],
+      }),
+      document("PROOF-099", "proof", { title: "Executable assertion" }),
+      document("ARCH-099", "architecture", { title: "Historical component map" }),
+    ]), {
+      id: "PAY-99",
+      title: "Checkout acknowledgement failure",
+      requirements: ["PAY-99"],
+      tokenBudget: 12_000,
+    }, { freshnessPolicy: policy, generatedAt: new Date("2026-07-18T12:00:00Z") });
+
+    expect(pack.sources.map((source) => source.document.id)).toEqual(["INC-099", "PROOF-099"]);
+    expect(pack.sources.find((source) => source.document.id === "PROOF-099")).toMatchObject({
+      graphDistance: 1,
+      inclusionReason: expect.stringContaining("type:proof"),
+    });
+    expect(pack.sources.map((source) => source.document.id)).not.toContain("ARCH-099");
   });
 
   it("renders pack provenance and exclusion reasons as Obsidian-compatible Markdown", async () => {

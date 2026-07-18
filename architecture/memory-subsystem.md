@@ -36,7 +36,10 @@ treated as memory graph nodes.
 
 The compiler scores direct matches against task requirements, services, tags,
 evidence paths, title/body terms, and explicitly requested document IDs. It
-then admits linked memory up to two graph hops. Documents are rejected by
+then selects the smallest set that covers explicit task signals. A relevant
+Proof is retained as an executable trust anchor. Graph expansion is limited to
+one outbound `links-to` hop from selected direct context, and only admits a
+linked document when it covers an unmet obligation. Documents are rejected by
 default when stale, unverified, below the confidence threshold, or too large
 for the 12,000-token default budget. The rendered planner payload contains the
 bodies of selected sources only; every omission is bodyless metadata with its

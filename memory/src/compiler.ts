@@ -14,21 +14,73 @@ import type {
 export const DEFAULT_MEMORY_PACK_BUDGET = 12_000;
 const MINIMUM_TRUST_SCORE = 0.65;
 
-function shortestGraphDistance(index: VaultIndex, from: string, targets: Set<string>): number | undefined {
-  if (targets.has(from)) {
-    return 0;
+interface CoverageCandidate extends SourceSelection {
+  obligations: string[];
+}
+
+const normalize = (value: string): string => value.trim().toLocaleLowerCase();
+
+function taskObligations(task: TaskInput): Set<string> {
+  const obligations = new Set<string>();
+  for (const id of task.explicitDocumentIds ?? []) {
+    obligations.add(`document:${normalize(id)}`);
   }
-  const visited = new Set([from]);
-  let frontier = [from];
-  for (let distance = 1; distance <= 2; distance += 1) {
-    const next = frontier.flatMap((id) => index.graph.adjacentDocumentIds(id)).filter((id) => !visited.has(id));
-    if (next.some((id) => targets.has(id))) {
-      return distance;
+  for (const requirement of [task.id, ...(task.requirements ?? [])]) {
+    obligations.add(`requirement:${normalize(requirement)}`);
+  }
+  for (const service of task.services ?? []) {
+    obligations.add(`service:${normalize(service)}`);
+  }
+  for (const sourcePath of task.paths ?? []) {
+    obligations.add(`path:${normalize(sourcePath)}`);
+  }
+  return obligations;
+}
+
+function candidateObligations(document: AssessedDocument, task: TaskInput, fallbackToTask: boolean): string[] {
+  const obligations = new Set<string>();
+  const explicitIds = new Set((task.explicitDocumentIds ?? []).map(normalize));
+  if (explicitIds.has(normalize(document.id))) {
+    obligations.add(`document:${normalize(document.id)}`);
+  }
+  const requestedRequirements = new Set([task.id, ...(task.requirements ?? [])].map(normalize));
+  for (const requirement of document.requirements) {
+    if (requestedRequirements.has(normalize(requirement))) {
+      obligations.add(`requirement:${normalize(requirement)}`);
     }
-    next.forEach((id) => visited.add(id));
-    frontier = next;
   }
-  return undefined;
+  const requestedServices = new Set((task.services ?? []).map(normalize));
+  for (const service of document.services) {
+    if (requestedServices.has(normalize(service))) {
+      obligations.add(`service:${normalize(service)}`);
+    }
+  }
+  const requestedPaths = new Set((task.paths ?? []).map(normalize));
+  for (const sourcePath of document.evidence) {
+    if (requestedPaths.has(normalize(sourcePath))) {
+      obligations.add(`path:${normalize(sourcePath)}`);
+    }
+  }
+  if (fallbackToTask) {
+    obligations.add("task:relevance");
+  }
+  return [...obligations].sort();
+}
+
+function coverageGains(candidate: CoverageCandidate, uncovered: Set<string>): string[] {
+  return candidate.obligations.filter((obligation) => uncovered.has(obligation));
+}
+
+function bestCoverageCandidate(candidates: CoverageCandidate[], uncovered: Set<string>): CoverageCandidate | undefined {
+  return candidates
+    .filter((candidate) => coverageGains(candidate, uncovered).length > 0)
+    .sort((left, right) =>
+      coverageGains(right, uncovered).length - coverageGains(left, uncovered).length
+      || right.relevanceScore - left.relevanceScore
+      || right.document.confidenceScore - left.document.confidenceScore
+      || left.document.estimatedTokens - right.document.estimatedTokens
+      || left.document.id.localeCompare(right.document.id),
+    )[0];
 }
 
 function averageConfidence(sources: SourceSelection[]): number {
@@ -74,19 +126,13 @@ export function compileMemoryPack(
   const policy = options.freshnessPolicy ?? DEFAULT_FRESHNESS_POLICY;
   const assessed = index.documents.map((document) => assessDocument(document, policy));
   const directResults = new Map(assessed.map((document) => [document.id, scoreRelevance(document, task)]));
-  const directIds = new Set(
-    assessed.filter((document) => (directResults.get(document.id)?.score ?? 0) > 0).map((document) => document.id),
-  );
   const omitted: OmittedSourceReference[] = [];
-  const candidates: SourceSelection[] = [];
+  const directCandidates: CoverageCandidate[] = [];
+  const fallbackToTask = taskObligations(task).size === 0;
 
   for (const document of assessed) {
     const direct = directResults.get(document.id);
-    const graphDistance = directIds.size > 0 ? shortestGraphDistance(index, document.id, directIds) : undefined;
-    const graphScore = direct?.score === 0 && graphDistance !== undefined ? 0.12 / graphDistance : 0;
-    const relevanceScore = Number(Math.min(1, (direct?.score ?? 0) + graphScore).toFixed(2));
-
-    if (relevanceScore === 0) {
+    if ((direct?.score ?? 0) === 0) {
       continue;
     }
     if (!task.includeStale && document.freshness === "stale") {
@@ -104,21 +150,84 @@ export function compileMemoryPack(
 
     const reason = direct && direct.reasons.length > 0
       ? direct.reasons.join("; ")
-      : `linked within ${graphDistance} graph hop${graphDistance === 1 ? "" : "s"} of task-relevant memory`;
-    candidates.push({ document, relevanceScore, inclusionReason: reason, graphDistance });
+      : "matches the task";
+    directCandidates.push({
+      document,
+      relevanceScore: direct!.score,
+      inclusionReason: reason,
+      graphDistance: 0,
+      obligations: candidateObligations(document, task, fallbackToTask),
+    });
   }
 
-  candidates.sort((left, right) =>
-    right.relevanceScore - left.relevanceScore
-    || right.document.confidenceScore - left.document.confidenceScore
-    || left.document.estimatedTokens - right.document.estimatedTokens
-    || left.document.id.localeCompare(right.document.id),
+  const uncovered = taskObligations(task);
+  if (fallbackToTask) {
+    uncovered.add("task:relevance");
+  }
+  const reachableProof = directCandidates.some((candidate) =>
+    index.graph.outboundLinkedDocumentIds(candidate.document.id)
+      .some((id) => index.byId.get(id)?.type === "proof"),
   );
+  if (directCandidates.some((candidate) => candidate.document.type === "proof") || reachableProof) {
+    uncovered.add("type:proof");
+    for (const candidate of directCandidates) {
+      if (candidate.document.type === "proof") {
+        candidate.obligations.push("type:proof");
+      }
+    }
+  }
+
+  const selected: CoverageCandidate[] = [];
+  while (uncovered.size > 0) {
+    const candidate = bestCoverageCandidate(
+      directCandidates.filter((item) => !selected.some((source) => source.document.id === item.document.id)),
+      uncovered,
+    );
+    if (!candidate) {
+      break;
+    }
+    const gains = coverageGains(candidate, uncovered);
+    candidate.inclusionReason = `${candidate.inclusionReason}; covers ${gains.join(", ")}`;
+    gains.forEach((gain) => uncovered.delete(gain));
+    selected.push(candidate);
+  }
+
+  while (uncovered.size > 0) {
+    const linkedCandidates = selected
+      .filter((source) => source.graphDistance === 0)
+      .flatMap((source) => index.graph.outboundLinkedDocumentIds(source.document.id)
+        .map((id) => assessed.find((document) => document.id === id))
+        .filter((document): document is AssessedDocument => document !== undefined)
+        .filter((document) => !selected.some((source) => source.document.id === document.id))
+        .filter((document) => document.freshness !== "stale" && document.freshness !== "unverified")
+        .filter((document) => document.confidenceScore >= MINIMUM_TRUST_SCORE)
+        .map((document) => ({
+          document,
+          relevanceScore: 0.12,
+          inclusionReason: `explicitly linked from selected task context`,
+          graphDistance: 1,
+          obligations: document.type === "proof" ? ["type:proof"] : [],
+        })));
+    const candidate = bestCoverageCandidate(linkedCandidates, uncovered);
+    if (!candidate) {
+      break;
+    }
+    const gains = coverageGains(candidate, uncovered);
+    candidate.inclusionReason = `${candidate.inclusionReason}; covers ${gains.join(", ")}`;
+    gains.forEach((gain) => uncovered.delete(gain));
+    selected.push(candidate);
+  }
+
+  for (const candidate of directCandidates) {
+    if (!selected.some((source) => source.document.id === candidate.document.id)) {
+      omitted.push(omit(candidate.document, "excluded because it does not add uncovered task coverage"));
+    }
+  }
 
   const budget = task.tokenBudget ?? DEFAULT_MEMORY_PACK_BUDGET;
   const sources: SourceSelection[] = [];
   let estimatedTokens = 0;
-  for (const candidate of candidates) {
+  for (const candidate of selected) {
     if (estimatedTokens + candidate.document.estimatedTokens <= budget) {
       sources.push(candidate);
       estimatedTokens += candidate.document.estimatedTokens;

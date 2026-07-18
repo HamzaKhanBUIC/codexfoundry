@@ -100,5 +100,11 @@ export function buildMemoryGraph(documents: MemoryDocument[]): MemoryGraph {
       }
       return [...adjacent].sort();
     },
+    outboundLinkedDocumentIds(documentId: string): string[] {
+      return graphEdges
+        .filter((edge) => edge.from === documentId && edge.relation === "links-to" && knownIds.has(edge.to))
+        .map((edge) => edge.to)
+        .sort();
+    },
   };
 }

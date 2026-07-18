@@ -84,6 +84,7 @@ export interface MemoryGraph {
   edges: GraphEdge[];
   danglingLinks: DanglingLink[];
   adjacentDocumentIds(documentId: string): string[];
+  outboundLinkedDocumentIds(documentId: string): string[];
 }
 
 export interface VaultIndex {
