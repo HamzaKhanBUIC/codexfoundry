@@ -299,3 +299,20 @@ trade-offs are recorded here.
 - **Consequences:** PAY-17 has an auditable fail-before/pass-after evidence
   chain. Browser proof may evolve from reproduction to repaired behavior, but
   the unit contract remains fixed.
+
+## ADR-017 — Make human review a bounded patch decision, not a merge capability
+
+- **Status:** Accepted
+- **Milestone:** Gate 3 review artifact
+- **Decision:** Present the exact verified candidate diff, its proof contract,
+  evidence, and limitations in a review bundle that requires an explicit human
+  approve/reject decision without exposing merge or deployment authority.
+- **Why:** A reviewer needs enough causal evidence to judge a high-risk payment
+  repair, while Foundry must preserve the distinction between review approval
+  and production release.
+- **Alternatives considered:** Auto-merge after green checks; a narrative-only
+  summary; let review approve vault writes implicitly.
+- **Why rejected:** Auto-merge exceeds MVP authority; narrative hides the
+  patch; implicit vault permission violates the separate durable-memory gate.
+- **Consequences:** The next action remains human-controlled. Any candidate
+  commit or memory proposal is a separate, reviewable operation.
