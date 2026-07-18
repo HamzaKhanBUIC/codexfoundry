@@ -372,3 +372,23 @@ trade-offs are recorded here.
 - **Consequences:** The PAY-17 pack now selects `ADR-001` and `PROOF-001` as
   its direct minimum context. The vault retains the same stable document IDs
   and explicit links.
+
+## ADR-021 — Prove regression protection with a disposable reintroduced defect
+
+- **Status:** Accepted
+- **Milestone:** Gate 3 regression replay
+- **Decision:** Starting from the approved repair commit, reintroduce only the
+  retry-key mutation in a separate disposable candidate and require the
+  unchanged PAY-17 assertion to fail before declaring the saved evaluation
+  effective.
+- **Why:** A green repaired test alone does not demonstrate that it will catch
+  the real defect when it returns. Replaying the exact causal mutation provides
+  that evidence without altering the frozen baseline or approved candidate.
+- **Alternatives considered:** Rely on historical baseline failure; weaken the
+  assertion into a mock check; mutate the approved candidate or frozen fixture.
+- **Why rejected:** Historical failure is not replay evidence; mock checks do
+  not prove the real causal path; mutating non-disposable repositories violates
+  the trust boundary.
+- **Consequences:** The replay produced a deliberate failing artifact and the
+  regression candidate is blocked from merge. A future vault update for this
+  result requires separate human approval.
