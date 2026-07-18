@@ -12,3 +12,12 @@ Use SQLite for the Build Week application state. The Obsidian vault remains the 
 - `evaluations`: saved regression command, fixture, expected result.
 
 Never store API keys, raw secrets, or unrestricted repository contents in the database.
+
+## Gate 1 foundation
+
+The local `foundry/` package uses Node's built-in `node:sqlite` driver. Its
+first migration creates `runs` and append-only `run_transition_events`; later
+tables must be added through explicit migrations. The database stores a
+repository commit, structured issue metadata, state transitions, timestamps,
+and failure reason only. It does not store vault bodies, credentials, or raw
+repository contents.
