@@ -192,3 +192,36 @@ trade-offs are recorded here.
 - **Consequences:** Gate 1 must persist the rendered payload and its source /
   omission records as the planner input artifact. Independent evidence
   execution and vault write approval remain later gates.
+
+## ADR-011 — Use built-in Node SQLite for local Foundry run state
+
+- **Status:** Accepted
+- **Milestone:** Gate 1 foundation
+- **Decision:** Persist local Foundry run state and append-only transition
+  events through Node 24's built-in `node:sqlite` driver.
+- **Why:** SQLite is the accepted application-state store, while the built-in
+  driver avoids a hosted service or native dependency for a judge-runnable MVP.
+- **Alternatives considered:** JSON files; a third-party SQLite driver; hosted
+  Postgres or a cloud workflow service.
+- **Why rejected:** JSON lacks transactional queryable state; third-party or
+  hosted services add installation, credential, or network risk without demo
+  value.
+- **Consequences:** The core package requires Node 24. Later tables are added
+  through explicit migrations; the vault remains the durable memory source.
+
+## ADR-012 — Pin orchestration to a validated frozen fixture map
+
+- **Status:** Accepted
+- **Milestone:** Gate 1 foundation
+- **Decision:** Derive a small read-only map from the frozen PAY-17 fixture
+  only after its Git commit, required service/proof paths, and judge-facing
+  commands validate.
+- **Why:** Planner and verifier inputs need deterministic source locations and
+  commands without storing unrestricted repository content or relying on a
+  generic search system.
+- **Alternatives considered:** Scan arbitrary repositories; persist all source
+  files; rely on a model to discover paths and commands.
+- **Why rejected:** Those options weaken determinism, increase context and
+  security risk, or exceed the single-fixture MVP scope.
+- **Consequences:** Any baseline mismatch or missing map element fails closed.
+  Generic repository support remains explicitly out of scope.
