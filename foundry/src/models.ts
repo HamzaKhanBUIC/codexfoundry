@@ -15,13 +15,17 @@ export const RUN_STATUSES = [
 export type RunStatus = (typeof RUN_STATUSES)[number];
 export type RunActor = "system" | "human" | "planner" | "implementer" | "verifier";
 
+export interface GitHubStyleIssue {
+  id?: string;
+  title: string;
+  body?: string;
+  labels?: string[];
+  status?: string;
+}
+
 export interface CreateRunInput {
   id: string;
-  issue: {
-    title: string;
-    body?: string;
-    labels?: string[];
-  };
+  issue: GitHubStyleIssue;
   repositoryCommit: string;
 }
 
@@ -69,4 +73,20 @@ export interface RepositoryMap {
   pay17TestPath: string;
   browserTestPath: string;
   commands: RepositoryCommandMap;
+}
+
+export type TaskRiskLevel = "high";
+
+/**
+ * The trusted, policy-owned task handoff. It intentionally excludes untrusted
+ * issue prose, commands, and permissions.
+ */
+export interface IntakeTask {
+  taskId: "PAY-17";
+  title: string;
+  acceptanceCriteria: readonly ["one logical checkout persists one payment"];
+  riskLevel: TaskRiskLevel;
+  services: readonly ["checkout-service", "payment-gateway"];
+  paths: readonly ["src/services/checkout-service.ts"];
+  repositoryCommit: string;
 }

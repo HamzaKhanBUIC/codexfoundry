@@ -23,6 +23,14 @@ The single correction loop permits one return from `verifying` to
 `implementing`: the initial implementation plus one evidence-driven repair
 attempt. The state machine rejects every other invalid or terminal transition.
 
+## Issue intake
+
+`compilePay17IntakeTask()` accepts only the seeded PAY-17 issue shape and the
+validated repository map. It returns a policy-owned, minimal task handoff;
+untrusted issue prose is retained only as source metadata in the run record.
+This package does not yet compile a Memory Pack, create a plan, invoke Codex,
+manage a worktree, run verification, expose an HTTP API, or write the vault.
+
 ## Repository map
 
 `buildRepositoryMap()` reads only the frozen checkout fixture's commit,
