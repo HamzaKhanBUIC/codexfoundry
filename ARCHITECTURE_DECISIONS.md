@@ -432,3 +432,20 @@ trade-offs are recorded here.
 - **Consequences:** A missing required artifact prevents a valid dashboard
   build. The projection is refreshed on rebuild or dev-server restart; later
   API work must preserve the same artifact ownership and read-only default.
+
+## ADR-024 — Centralize judge-visible evidence interpretation in the core
+
+- **Status:** Accepted
+- **Milestone:** 4, shared evidence projection
+- **Decision:** Extract the PAY-17 evidence-to-display projection into the
+  core package and have the dashboard consume that one read-only adapter.
+- **Why:** The same proof facts must not be reinterpreted independently by the
+  Vite build, dashboard, and future local API.
+- **Alternatives considered:** Keep projection logic in Vite; let each UI
+  component read evidence directly; add a database migration first.
+- **Why rejected:** Those options duplicate trust-sensitive mapping logic,
+  expose raw artifacts broadly, or add state that the completed fixture does
+  not need.
+- **Consequences:** Missing required commands or approval fields fail closed.
+  A future API may expose the projection but cannot grant evidence ownership or
+  write authority.
