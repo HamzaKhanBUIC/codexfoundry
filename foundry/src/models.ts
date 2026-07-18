@@ -129,3 +129,32 @@ export interface StoredMemoryPack {
   generatedAt: string;
   createdAt: string;
 }
+
+export type PlanStatus = "proposed" | "approved" | "rejected";
+
+export interface ProofAssertion {
+  requirementId: "PAY-17";
+  assertion: "one logical checkout persists one payment";
+  commands: string[];
+}
+
+/** A reviewable proposal. It is not evidence and grants no execution authority. */
+export interface PlanProposal {
+  id: string;
+  runId: string;
+  memoryPackId: string;
+  summary: string;
+  rootCauseHypothesis: string;
+  affectedPaths: string[];
+  allowedCommands: string[];
+  proofContract: ProofAssertion[];
+  risks: string[];
+}
+
+export interface StoredPlan extends PlanProposal {
+  status: PlanStatus;
+  createdAt: string;
+  approvedAt?: string;
+  rejectedAt?: string;
+  reviewerReason?: string;
+}

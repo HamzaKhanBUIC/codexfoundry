@@ -43,6 +43,20 @@ CREATE TABLE IF NOT EXISTS memory_packs (
 
 CREATE INDEX IF NOT EXISTS memory_packs_run_id_idx
   ON memory_packs(run_id);
+
+CREATE TABLE IF NOT EXISTS plans (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL UNIQUE REFERENCES runs(id),
+  memory_pack_id TEXT NOT NULL REFERENCES memory_packs(id),
+  proposal_json TEXT NOT NULL,
+  status TEXT NOT NULL,
+  reviewer_reason TEXT,
+  created_at TEXT NOT NULL,
+  approved_at TEXT,
+  rejected_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS plans_run_id_idx ON plans(run_id);
 `;
 
 export function openFoundryDatabase(databasePath: string): DatabaseSync {
