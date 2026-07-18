@@ -1,0 +1,18 @@
+{
+  "runId": "RUN-PAY-17-001",
+  "authority": "human_reviewer",
+  "decision": "approved",
+  "approvedCandidateCommit": "2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b",
+  "parentBaselineCommit": "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+  "reviewArtifact": "foundry/reviews/RUN-PAY-17-001.md",
+  "verifierArtifact": "foundry/evidence/RUN-PAY-17-001-verifier.json",
+  "changedPaths": [
+    "src/services/checkout-service.ts",
+    "tests/browser/pay-17.spec.ts"
+  ],
+  "limits": [
+    "Approval created a commit only in the disposable candidate worktree.",
+    "No merge, deploy, or Obsidian vault write is authorized by this decision."
+  ],
+  "nextState": "memory_proposal_pending"
+}

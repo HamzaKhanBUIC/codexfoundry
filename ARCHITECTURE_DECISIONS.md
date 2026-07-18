@@ -316,3 +316,21 @@ trade-offs are recorded here.
   patch; implicit vault permission violates the separate durable-memory gate.
 - **Consequences:** The next action remains human-controlled. Any candidate
   commit or memory proposal is a separate, reviewable operation.
+
+## ADR-018 — Commit only the human-approved candidate, never the frozen baseline
+
+- **Status:** Accepted
+- **Milestone:** Gate 3 human patch approval
+- **Decision:** After explicit patch approval, commit the verified diff only in
+  the detached disposable candidate, retaining the frozen baseline as its
+  parent and recording both commit identities.
+- **Why:** A stable candidate commit provides durable provenance for later
+  proof and memory proposals without granting merge authority or altering the
+  reproducible defect baseline.
+- **Alternatives considered:** Leave the approved diff uncommitted; merge it
+  into the frozen fixture; create an external GitHub pull request.
+- **Why rejected:** An uncommitted diff has weaker provenance; merging destroys
+  the baseline; a real GitHub integration is excluded from the MVP.
+- **Consequences:** Later evidence can reference `2a5d01f`; the candidate may
+  be disposed after its approved artifacts are persisted, while the baseline
+  remains available for regression replay.
