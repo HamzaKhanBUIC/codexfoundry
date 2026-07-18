@@ -66,11 +66,11 @@ describe("Memory Pack compiler", () => {
       tokenBudget: 12_000,
     }, { freshnessPolicy: policy, generatedAt: new Date("2026-07-18T12:00:00Z") });
 
-    expect(pack.sources.map((source) => source.document.id)).toEqual(["ARCH-001", "PROOF-001"]);
+    expect(pack.sources.map((source) => source.document.id)).toEqual(["ADR-001", "PROOF-001"]);
     expect(pack.sources.map((source) => source.document.id)).not.toContain("INC-000");
     expect(pack.sources.every((source) => source.inclusionReason.includes("covers"))).toBe(true);
     expect(pack.omittedSources).toContainEqual(expect.objectContaining({
-      id: "ADR-001",
+      id: "ARCH-001",
       reason: "excluded because it does not add uncovered task coverage",
     }));
     expect(pack.omittedSources).toContainEqual(expect.objectContaining({

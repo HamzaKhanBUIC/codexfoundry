@@ -1,0 +1,24 @@
+{
+  "runId": "RUN-PAY-17-001",
+  "authority": "human_reviewer",
+  "approval": "APPROVE VAULT WRITE",
+  "status": "completed",
+  "stagedBundleCommit": "7872af8",
+  "approvedCandidateCommit": "2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b",
+  "writtenTargets": [
+    "vault/incidents/INC-001-pay-17-duplicate-charge.md",
+    "vault/adrs/ADR-001-payment-retry-idempotency.md",
+    "vault/proofs/PROOF-001-pay-17-single-payment.md",
+    "vault/evaluations/EVAL-001-pay-17-regression.md"
+  ],
+  "validation": {
+    "memoryTests": "18 passed",
+    "memoryBuild": "passed",
+    "typedEvidence": "all four documents parsed",
+    "stagedContent": "matches live vault content after CRLF/LF normalization"
+  },
+  "notes": [
+    "The compiler fixture now expects ADR-001 plus PROOF-001 because the refreshed ADR owns the direct verified source reference and is the smaller trustworthy context.",
+    "The deliberate regression replay remains pending and is not claimed as executed."
+  ]
+}

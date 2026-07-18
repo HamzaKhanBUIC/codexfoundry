@@ -8,10 +8,20 @@ requirements: [PAY-17]
 tags: [decision, payments, retry, idempotency]
 links: [ARCH-001, SVC-001, SVC-002, INC-001, PROOF-001, EVAL-001]
 evidence:
-  - demo-store/tests/payment-service.pay-17.test.ts
-  - demo-store/tests/browser/pay-17.spec.ts
-verified_commit: 1169daf
-verified_at: 2026-07-18T00:00:00Z
+  - kind: source
+    reference: demo-store/src/services/checkout-service.ts
+    verified: true
+  - kind: test
+    reference: demo-store/tests/payment-service.pay-17.test.ts
+    verified: true
+  - kind: browser
+    reference: demo-store/tests/browser/pay-17.spec.ts
+    verified: true
+  - kind: commit
+    reference: 2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b
+    verified: true
+verified_commit: 2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b
+verified_at: 2026-07-19T00:07:00+05:00
 confidence: verified
 staleness: fresh
 ---
@@ -20,22 +30,28 @@ staleness: fresh
 
 ## Decision
 
-Treat all retries of one logical checkout as one payment request and pass the
-same idempotency key to the payment gateway on every retry.
+All retries for one logical checkout send the same request idempotency key to
+the payment gateway.
 
-## Rationale
+## Why
 
-A gateway acknowledgement timeout can happen after the provider has captured
-funds. A retry with a different key creates a second authorized capture.
+An acknowledgement timeout can occur after the gateway captures funds. Reusing
+the key lets the gateway return the existing capture instead of creating a
+second one. Candidate `2a5d01f` implements this decision.
 
 ## Alternatives considered
 
-- Do not retry acknowledgement timeouts: rejected because it abandons a valid
-  checkout without knowing its final state.
-- Generate a new key per retry: rejected because it defeats gateway
-  deduplication.
-- Deduplicate only after order creation: rejected because the gateway capture
-  already occurred.
+- Do not retry acknowledgement timeouts.
+- Generate a new key for each retry.
+- Deduplicate only after order creation.
 
-This ADR links the code boundary in [[ARCH-001]], the observed failure in
-[[INC-001]], and the executable contract in [[PROOF-001]].
+## Why rejected
+
+Stopping retries abandons uncertain valid checkouts; a new key defeats gateway
+deduplication; order-level repair happens after the duplicate capture.
+
+## Consequences
+
+The original PAY-17 unit assertion remains unchanged and passes in the
+approved candidate. [[PROOF-001]] records the executable evidence; [[EVAL-001]]
+defines the deliberate regression replay still required.

@@ -353,3 +353,22 @@ trade-offs are recorded here.
 - **Consequences:** A separate human approval must authorize copying the four
   exact staged files into their manifest targets. The deliberate regression
   remains a declared future evaluation until it produces its own evidence.
+
+## ADR-020 — Revalidate minimum-context selection after approved memory updates
+
+- **Status:** Accepted
+- **Milestone:** Gate 3 approved vault write
+- **Decision:** After an approved vault update, rerun the Memory Pack suite and
+  update its deterministic expectation only when the refreshed, verified
+  metadata legitimately changes the smallest trustworthy source set.
+- **Why:** Memory is product behavior, not static documentation. A note that
+  gains a direct verified source reference can correctly replace a broader or
+  older note in a minimum-context pack.
+- **Alternatives considered:** Keep the old fixture expectation regardless of
+  evidence; suppress the changed note from retrieval; skip validation after a
+  human-approved write.
+- **Why rejected:** The first two options conceal a real selection change; the
+  third risks silent retrieval regressions.
+- **Consequences:** The PAY-17 pack now selects `ADR-001` and `PROOF-001` as
+  its direct minimum context. The vault retains the same stable document IDs
+  and explicit links.
