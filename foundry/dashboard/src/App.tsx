@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Badge,
   Button,
@@ -19,13 +19,23 @@ import {
   ShieldCheckmark20Filled,
   Warning20Regular,
 } from "@fluentui/react-icons";
-import run from "virtual:foundry-run";
+import staticRun from "virtual:foundry-run";
 
 type View = "overview" | "evidence" | "memory";
+type RunProjection = typeof staticRun;
 
 export function App() {
   const [view, setView] = useState<View>("overview");
   const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const [liveRun, setLiveRun] = useState(staticRun);
+
+  useEffect(() => {
+    void fetch("/api/runs/RUN-PAY-17-001")
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Run evidence is unavailable.")))
+      .then((projection) => setLiveRun(projection))
+      .catch(() => undefined);
+  }, []);
+  const run = liveRun;
 
   return (
     <main className="app-shell">
@@ -71,15 +81,15 @@ export function App() {
           <Tab value="memory">Memory</Tab>
         </TabList>
 
-        {view === "overview" && <Overview evidenceOpen={evidenceOpen} onOpenEvidence={() => setEvidenceOpen(true)} />}
-        {view === "evidence" && <Evidence />}
-        {view === "memory" && <Memory />}
+        {view === "overview" && <Overview run={run} evidenceOpen={evidenceOpen} onOpenEvidence={() => setEvidenceOpen(true)} />}
+        {view === "evidence" && <Evidence run={run} />}
+        {view === "memory" && <Memory run={run} />}
       </section>
     </main>
   );
 }
 
-function Overview({ evidenceOpen, onOpenEvidence }: { evidenceOpen: boolean; onOpenEvidence: () => void }) {
+function Overview({ run, evidenceOpen, onOpenEvidence }: { run: RunProjection; evidenceOpen: boolean; onOpenEvidence: () => void }) {
   return (
     <div className="content-grid">
       <section className="main-column">
@@ -130,13 +140,13 @@ function Overview({ evidenceOpen, onOpenEvidence }: { evidenceOpen: boolean; onO
           <Text size={300}>Only the retry-key mutation was restored. The unchanged PAY-17 proof failed with two payments.</Text>
         </Card>
 
-        {evidenceOpen && <Evidence compact />}
+        {evidenceOpen && <Evidence run={run} compact />}
       </aside>
     </div>
   );
 }
 
-function Evidence({ compact = false }: { compact?: boolean }) {
+function Evidence({ run, compact = false }: { run: RunProjection; compact?: boolean }) {
   return (
     <Card className={compact ? "panel evidence-panel compact" : "panel evidence-panel"}>
       <CardHeader header={<Text weight="semibold">Command evidence</Text>} description={compact ? undefined : "Verifier-owned outputs. Implementer narration is never proof."} />
@@ -153,7 +163,7 @@ function Evidence({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function Memory() {
+function Memory({ run }: { run: RunProjection }) {
   return (
     <div className="memory-layout">
       <Card className="panel memory-lead">

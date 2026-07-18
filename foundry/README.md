@@ -13,6 +13,16 @@ npm test
 npm run build
 ```
 
+## Local read API
+
+```powershell
+cd foundry
+npm run serve
+```
+
+The API listens only on `127.0.0.1:4174`. Start it before `npm run dev` in
+`foundry/dashboard/`; Vite proxies dashboard `/api` requests to it.
+
 ## Current contract
 
 `RunRepository` persists the issue metadata, frozen repository commit, current

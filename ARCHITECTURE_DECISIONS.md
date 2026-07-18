@@ -449,3 +449,21 @@ trade-offs are recorded here.
 - **Consequences:** Missing required commands or approval fields fail closed.
   A future API may expose the projection but cannot grant evidence ownership or
   write authority.
+
+## ADR-025 — Expose one fixed local read endpoint before any action endpoint
+
+- **Status:** Accepted
+- **Milestone:** 4, local read API
+- **Decision:** Serve only the completed PAY-17 projection and health status
+  from a loopback-only local HTTP API, with all other paths and methods denied.
+- **Why:** The dashboard needs live evidence loading without exposing generic
+  repository access or confusing a proof viewer with an orchestration control
+  plane.
+- **Alternatives considered:** Browser filesystem reads; a generic artifact
+  API; add approval actions with the first endpoint.
+- **Why rejected:** Browser filesystem reads are not portable; generic access
+  broadens the trust boundary; action endpoints require separate human-review
+  and state-transition contracts.
+- **Consequences:** The dashboard can refresh the authoritative projection in
+  local development. It remains incapable of changing a run, vault, Git state,
+  or production system.
