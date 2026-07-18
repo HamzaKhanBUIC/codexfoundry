@@ -158,3 +158,18 @@ export interface StoredPlan extends PlanProposal {
   rejectedAt?: string;
   reviewerReason?: string;
 }
+
+/**
+ * A constrained, non-authoritative implementation report from Codex. Command
+ * output is captured separately by the executor/verifier and is never trusted
+ * merely because the implementer reports it.
+ */
+export interface ImplementationReport {
+  runId: string;
+  planId: string;
+  changedPaths: string[];
+  changeSummary: string;
+  commandsRun: string[];
+  unresolvedRisks: string[];
+  confidence: "low" | "medium" | "high";
+}

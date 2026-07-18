@@ -246,3 +246,20 @@ trade-offs are recorded here.
 - **Consequences:** The product records only a validated structured proposal,
   not private reasoning. Gate 3 must receive an already approved plan and may
   not reinterpret it as permission beyond its fixed paths and commands.
+
+## ADR-014 — Separate Codex implementation reporting from proof evidence
+
+- **Status:** Accepted
+- **Milestone:** Gate 3 implementation boundary
+- **Decision:** Hand Codex an already approved plan, the exact persisted Memory
+  Pack, and a created candidate worktree. Accept only a narrow JSON report for
+  its claimed paths, commands, summary, risks, and non-authoritative confidence;
+  capture the actual diff and command output separately for the Verifier.
+- **Why:** A model report is useful to review the handoff but must never become
+  proof that a high-risk payment repair succeeded.
+- **Alternatives considered:** Treat Codex prose as evidence; allow free-form
+  final responses; ask Codex to certify verification.
+- **Why rejected:** Each alternative mixes agent claims with independent
+  evidence, permits authority leakage, and weakens a judge-visible trust story.
+- **Consequences:** The next execution task must persist raw command/diff
+  artifacts and the later Verifier alone may determine PAY-17 proof status.
