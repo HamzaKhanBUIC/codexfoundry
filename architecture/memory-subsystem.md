@@ -52,7 +52,9 @@ over-budget pack.
 Evidence is structured as a typed reference with an explicit verification flag;
 only verified typed references increase confidence. Legacy string evidence is
 readable for migration but is unverified. A task repository commit is a
-freshness input: notes lacking a matching `verified_commit` become stale.
+freshness input: notes lacking a matching `verified_commit` become stale. A
+short Git hash and its full hash identify the same commit only when both are at
+least seven characters and one is a prefix of the other.
 Draft templates may contain blank optional YAML values; they load safely but
 remain unverified and excluded from normal packs.
 

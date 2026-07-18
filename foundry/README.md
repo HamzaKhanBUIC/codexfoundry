@@ -28,8 +28,16 @@ attempt. The state machine rejects every other invalid or terminal transition.
 `compilePay17IntakeTask()` accepts only the seeded PAY-17 issue shape and the
 validated repository map. It returns a policy-owned, minimal task handoff;
 untrusted issue prose is retained only as source metadata in the run record.
-This package does not yet compile a Memory Pack, create a plan, invoke Codex,
-manage a worktree, run verification, expose an HTTP API, or write the vault.
+This package does not yet create a plan, invoke Codex, manage a worktree, run
+verification, expose an HTTP API, or write the vault.
+
+## Memory Pack integration
+
+`compileAndPersistPay17MemoryPack()` consumes only the trusted intake task and
+the read-only vault. It persists the exact compiler-rendered Markdown, a
+SHA-256 payload hash, measured token/confidence values, and bodyless source /
+omission metadata in the same transaction that advances a run to
+`memory_compiled`. The raw vault index is never persisted or exposed.
 
 ## Repository map
 

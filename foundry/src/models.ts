@@ -90,3 +90,42 @@ export interface IntakeTask {
   paths: readonly ["src/services/checkout-service.ts"];
   repositoryCommit: string;
 }
+
+export interface StoredMemoryPackSource {
+  id: string;
+  title: string;
+  sourcePath: string;
+  inclusionReason: string;
+  relevanceScore: number;
+  confidenceScore: number;
+  freshness: "fresh" | "aging" | "stale" | "unverified";
+  graphDistance?: number;
+}
+
+export interface StoredMemoryPackOmission {
+  id: string;
+  title: string;
+  confidenceScore: number;
+  freshness: "fresh" | "aging" | "stale" | "unverified";
+  reason: string;
+}
+
+/**
+ * SQLite representation of the exact context artifact. Selected vault bodies
+ * live only in renderedPayload; source metadata remains bodyless.
+ */
+export interface StoredMemoryPack {
+  id: string;
+  runId: string;
+  taskId: "PAY-17";
+  repositoryCommit: string;
+  renderedPayload: string;
+  payloadSha256: string;
+  estimatedTokens: number;
+  tokenBudget: number;
+  confidenceScore: number;
+  sources: StoredMemoryPackSource[];
+  omittedSources: StoredMemoryPackOmission[];
+  generatedAt: string;
+  createdAt: string;
+}

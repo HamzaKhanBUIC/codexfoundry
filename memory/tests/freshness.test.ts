@@ -44,5 +44,6 @@ describe("freshness and confidence", () => {
     expect(assessFreshness(architecture, commitPolicy)).toBe("stale");
     expect(assessFreshness({ ...architecture, verifiedCommit: undefined }, commitPolicy)).toBe("stale");
     expect(assessFreshness(architecture, { ...policy, repositoryCommit: architecture.verifiedCommit })).toBe("fresh");
+    expect(assessFreshness(architecture, { ...policy, repositoryCommit: "1169dafdc3d1f18fed2adca11ce900a15a67cfd3" })).toBe("fresh");
   });
 });

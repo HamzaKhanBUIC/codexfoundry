@@ -24,6 +24,25 @@ CREATE TABLE IF NOT EXISTS run_transition_events (
 
 CREATE INDEX IF NOT EXISTS run_transition_events_run_id_idx
   ON run_transition_events(run_id, id);
+
+CREATE TABLE IF NOT EXISTS memory_packs (
+  id TEXT PRIMARY KEY,
+  run_id TEXT NOT NULL UNIQUE REFERENCES runs(id),
+  task_id TEXT NOT NULL,
+  repository_commit TEXT NOT NULL,
+  rendered_payload TEXT NOT NULL,
+  payload_sha256 TEXT NOT NULL,
+  estimated_tokens INTEGER NOT NULL,
+  token_budget INTEGER NOT NULL,
+  confidence_score REAL NOT NULL,
+  sources_json TEXT NOT NULL,
+  omitted_sources_json TEXT NOT NULL,
+  generated_at TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS memory_packs_run_id_idx
+  ON memory_packs(run_id);
 `;
 
 export function openFoundryDatabase(databasePath: string): DatabaseSync {

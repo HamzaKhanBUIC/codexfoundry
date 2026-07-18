@@ -18,6 +18,14 @@ const confidenceBase: Record<ConfidenceLevel, number> = {
   verified: 0.82,
 };
 
+function matchingCommitIdentity(left: string, right: string): boolean {
+  const expected = left.trim().toLowerCase();
+  const observed = right.trim().toLowerCase();
+  return expected.length >= 7
+    && observed.length >= 7
+    && (expected === observed || expected.startsWith(observed) || observed.startsWith(expected));
+}
+
 export function assessFreshness(
   document: MemoryDocument,
   policy: FreshnessPolicy = DEFAULT_FRESHNESS_POLICY,
@@ -30,7 +38,7 @@ export function assessFreshness(
     return "stale";
   }
 
-  if (policy.repositoryCommit && document.verifiedCommit !== policy.repositoryCommit) {
+  if (policy.repositoryCommit && (!document.verifiedCommit || !matchingCommitIdentity(document.verifiedCommit, policy.repositoryCommit))) {
     return "stale";
   }
 
