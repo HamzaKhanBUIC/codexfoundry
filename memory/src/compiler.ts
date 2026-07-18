@@ -1,10 +1,11 @@
 import { assessDocument, DEFAULT_FRESHNESS_POLICY } from "./freshness.js";
+import { estimateRenderedMemoryPackTokens } from "./markdown.js";
 import { scoreRelevance } from "./scoring.js";
 import type {
   AssessedDocument,
   FreshnessPolicy,
   MemoryPack,
-  OmittedSource,
+  OmittedSourceReference,
   SourceSelection,
   TaskInput,
   VaultIndex,
@@ -43,6 +44,28 @@ export interface CompileOptions {
   generatedAt?: Date;
 }
 
+function omit(document: AssessedDocument, reason: string): OmittedSourceReference {
+  return {
+    id: document.id,
+    title: document.title,
+    freshness: document.freshness,
+    confidenceScore: document.confidenceScore,
+    reason,
+  };
+}
+
+function measurePack(pack: MemoryPack): MemoryPack {
+  let estimatedTokens = pack.estimatedTokens;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const measured = estimateRenderedMemoryPackTokens({ ...pack, estimatedTokens });
+    if (measured === estimatedTokens) {
+      break;
+    }
+    estimatedTokens = measured;
+  }
+  return { ...pack, estimatedTokens };
+}
+
 export function compileMemoryPack(
   index: VaultIndex,
   task: TaskInput,
@@ -54,7 +77,7 @@ export function compileMemoryPack(
   const directIds = new Set(
     assessed.filter((document) => (directResults.get(document.id)?.score ?? 0) > 0).map((document) => document.id),
   );
-  const omitted: OmittedSource[] = [];
+  const omitted: OmittedSourceReference[] = [];
   const candidates: SourceSelection[] = [];
 
   for (const document of assessed) {
@@ -67,15 +90,15 @@ export function compileMemoryPack(
       continue;
     }
     if (!task.includeStale && document.freshness === "stale") {
-      omitted.push({ document, reason: "excluded because its verified knowledge is stale" });
+      omitted.push(omit(document, "excluded because its verified knowledge is stale"));
       continue;
     }
     if (!task.includeStale && document.freshness === "unverified") {
-      omitted.push({ document, reason: "excluded because it is unverified" });
+      omitted.push(omit(document, "excluded because it is unverified"));
       continue;
     }
     if (document.confidenceScore < MINIMUM_TRUST_SCORE) {
-      omitted.push({ document, reason: `excluded because confidence ${document.confidenceScore} is below ${MINIMUM_TRUST_SCORE}` });
+      omitted.push(omit(document, `excluded because confidence ${document.confidenceScore} is below ${MINIMUM_TRUST_SCORE}`));
       continue;
     }
 
@@ -100,11 +123,11 @@ export function compileMemoryPack(
       sources.push(candidate);
       estimatedTokens += candidate.document.estimatedTokens;
     } else {
-      omitted.push({ document: candidate.document, reason: `excluded because it exceeds the ${budget}-token pack budget` });
+      omitted.push(omit(candidate.document, `excluded because it exceeds the ${budget}-token pack budget`));
     }
   }
 
-  return {
+  let pack = measurePack({
     id: `PACK-${task.id}`,
     task,
     generatedAt: options.generatedAt ?? new Date(),
@@ -112,8 +135,26 @@ export function compileMemoryPack(
     estimatedTokens,
     confidenceScore: averageConfidence(sources),
     sources,
-    omittedSources: omitted.sort((left, right) => left.document.id.localeCompare(right.document.id)),
-  };
+    omittedSources: omitted.sort((left, right) => left.id.localeCompare(right.id)),
+  });
+
+  while (pack.estimatedTokens > budget && pack.sources.length > 0) {
+    const source = pack.sources.at(-1)!;
+    pack = measurePack({
+      ...pack,
+      sources: pack.sources.slice(0, -1),
+      omittedSources: [...pack.omittedSources, omit(source.document, `excluded because it exceeds the ${budget}-token pack budget`)]
+        .sort((left, right) => left.id.localeCompare(right.id)),
+    });
+  }
+
+  if (pack.estimatedTokens > budget) {
+    throw new Error(
+      `Memory Pack minimum safe payload requires ${pack.estimatedTokens} tokens, exceeding the ${budget}-token budget.`,
+    );
+  }
+
+  return pack;
 }
 
 export function assessedDocuments(index: VaultIndex, policy: FreshnessPolicy): AssessedDocument[] {

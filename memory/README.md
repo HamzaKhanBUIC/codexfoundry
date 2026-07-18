@@ -23,14 +23,22 @@ npm test
 5. Rank task-relevant documents deterministically.
 6. Exclude stale, unverified, low-confidence, and over-budget knowledge by
    default.
-7. Render the selected context and exclusions as reviewable Markdown.
+7. Render the exact selected source context as reviewable Markdown, while
+   representing every omitted source with bodyless reference metadata only.
 
 ## Memory Pack contract
 
 `compileMemoryPack(index, task)` accepts a task ID, title, optional services,
 requirements, labels, repository paths, explicit document IDs, and a token
 budget. It returns sources with their inclusion reason, relevance score,
-confidence score, freshness, estimated tokens, and omitted-source reasons.
+confidence score, freshness, and selected source body. Omitted sources expose
+only ID, title, freshness, confidence score, and omission reason.
+`estimatedTokens` is measured from the exact rendered Markdown payload that a
+future planner would receive.
+
+If the requested budget cannot accommodate even the safe payload metadata, the
+compiler fails closed with the measured minimum rather than returning an
+over-budget context package.
 
 The compiler is deterministic. GPT-assisted ranking mentioned in the product
 architecture remains a later, bounded enhancement; it cannot override the

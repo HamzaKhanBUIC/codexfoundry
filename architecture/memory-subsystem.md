@@ -33,8 +33,13 @@ The compiler scores direct matches against task requirements, services, tags,
 evidence paths, title/body terms, and explicitly requested document IDs. It
 then admits linked memory up to two graph hops. Documents are rejected by
 default when stale, unverified, below the confidence threshold, or too large
-for the 12,000-token default budget. The rendered pack identifies every source
-and every omission.
+for the 12,000-token default budget. The rendered planner payload contains the
+bodies of selected sources only; every omission is bodyless metadata with its
+ID, title, freshness, confidence, and reason. Its token estimate is measured
+from that exact rendered payload. The rendered pack identifies every source
+and every omission. If even this safe payload exceeds the requested budget, the
+compiler fails closed with the measured minimum instead of returning an
+over-budget pack.
 
 ## Forward compatibility
 

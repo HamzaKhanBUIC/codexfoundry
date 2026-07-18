@@ -97,8 +97,11 @@ export interface SourceSelection {
   graphDistance?: number;
 }
 
-export interface OmittedSource {
-  document: AssessedDocument;
+export interface OmittedSourceReference {
+  id: string;
+  title: string;
+  freshness: FreshnessStatus;
+  confidenceScore: number;
   reason: string;
 }
 
@@ -110,5 +113,5 @@ export interface MemoryPack {
   estimatedTokens: number;
   confidenceScore: number;
   sources: SourceSelection[];
-  omittedSources: OmittedSource[];
+  omittedSources: OmittedSourceReference[];
 }

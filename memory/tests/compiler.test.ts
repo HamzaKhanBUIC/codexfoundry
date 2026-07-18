@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { compileMemoryPack } from "../src/compiler.js";
-import { renderMemoryPackMarkdown } from "../src/markdown.js";
+import { estimateRenderedMemoryPackTokens, renderMemoryPackMarkdown } from "../src/markdown.js";
 import { loadVault } from "../src/vault.js";
 
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -34,7 +34,7 @@ describe("Memory Pack compiler", () => {
     ]));
     expect(pack.sources.map((source) => source.document.id)).not.toContain("INC-000");
     expect(pack.omittedSources).toContainEqual(expect.objectContaining({
-      document: expect.objectContaining({ id: "INC-000" }),
+      id: "INC-000",
       reason: expect.stringContaining("stale"),
     }));
     expect(pack.estimatedTokens).toBeLessThanOrEqual(pack.tokenBudget);
@@ -53,8 +53,32 @@ describe("Memory Pack compiler", () => {
 
     expect(markdown).toContain("# Memory Pack — PAY-17");
     expect(markdown).toContain("[[ADR-001]]");
-    expect(markdown).toContain("[[INC-000]] — excluded because its verified knowledge is stale.");
+    expect(markdown).toContain("[[INC-000]] — Legacy checkout refactor notes.");
+    expect(markdown).toContain("excluded because its verified knowledge is stale.");
     expect(markdown).toContain("estimated_tokens:");
+  });
+
+  it("serializes only selected note bodies and measures the exact planner payload", async () => {
+    const index = await loadVault(vaultPath);
+    const pack = compileMemoryPack(index, {
+      id: "PAY-17",
+      title: "Duplicate charge after checkout retry",
+      services: ["checkout-service"],
+      tokenBudget: 12_000,
+    }, { freshnessPolicy: policy, generatedAt: new Date("2026-07-18T12:00:00Z") });
+    const markdown = renderMemoryPackMarkdown(pack);
+    const staleIncident = index.byId.get("INC-000")!;
+
+    expect(pack.omittedSources.find((source) => source.id === "INC-000")).toEqual({
+      id: "INC-000",
+      title: staleIncident.title,
+      freshness: "stale",
+      confidenceScore: 0.26,
+      reason: "excluded because its verified knowledge is stale",
+    });
+    expect(JSON.stringify(pack)).not.toContain(staleIncident.body);
+    expect(markdown).not.toContain(staleIncident.body);
+    expect(pack.estimatedTokens).toBe(estimateRenderedMemoryPackTokens(pack));
   });
 
   it("keeps the pack within a constrained context budget and reports omissions", async () => {
@@ -63,13 +87,25 @@ describe("Memory Pack compiler", () => {
       id: "PAY-17",
       title: "Duplicate charge after checkout retry",
       services: ["checkout-service", "payment-gateway"],
-      tokenBudget: 300,
+      tokenBudget: 500,
     }, { freshnessPolicy: policy, generatedAt: new Date("2026-07-18T12:00:00Z") });
 
-    expect(pack.sources.length).toBeGreaterThan(0);
-    expect(pack.estimatedTokens).toBeLessThanOrEqual(300);
+    expect(pack.estimatedTokens).toBeLessThanOrEqual(500);
+    expect(pack.sources).toHaveLength(0);
     expect(pack.omittedSources).toContainEqual(expect.objectContaining({
       reason: expect.stringContaining("pack budget"),
     }));
+  });
+
+  it("fails closed when safe pack metadata alone exceeds the requested budget", async () => {
+    const index = await loadVault(vaultPath);
+
+    expect(() => compileMemoryPack(index, {
+      id: "PAY-17",
+      title: "Duplicate charge after checkout retry",
+      services: ["checkout-service", "payment-gateway"],
+      tokenBudget: 300,
+    }, { freshnessPolicy: policy, generatedAt: new Date("2026-07-18T12:00:00Z") }))
+      .toThrow("Memory Pack minimum safe payload requires");
   });
 });
