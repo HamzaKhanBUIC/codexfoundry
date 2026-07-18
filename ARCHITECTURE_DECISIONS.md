@@ -173,3 +173,22 @@ trade-offs are recorded here.
   violate the two-step human approval rule for persistent vault changes.
 - **Consequences:** Milestone 3 integrates the existing compiler; direct vault
   writes remain deferred until a staged approval flow exists.
+
+## ADR-010 — Gate all Planner context through the deterministic Memory Pack
+
+- **Status:** Accepted
+- **Milestone:** Gate 0 trust hardening
+- **Decision:** A future Planner may receive only the rendered, measured
+  Memory Pack and its bodyless omission metadata; it must not receive raw vault
+  documents or the in-memory vault index.
+- **Why:** The compiler can enforce freshness, repository-commit matching,
+  confidence, evidence shape, minimum coverage, directional links, and token
+  accounting only at this boundary.
+- **Alternatives considered:** Send the full vault to the Planner; let the
+  Planner query the vault/index directly; rely on a model to ignore stale or
+  malicious notes.
+- **Why rejected:** Each alternative bypasses deterministic provenance and
+  makes stale or untrusted context difficult to prove absent.
+- **Consequences:** Gate 1 must persist the rendered payload and its source /
+  omission records as the planner input artifact. Independent evidence
+  execution and vault write approval remain later gates.
