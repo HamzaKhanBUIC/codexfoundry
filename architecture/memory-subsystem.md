@@ -27,6 +27,11 @@ The vault is the source of truth for durable engineering memory. The index and
 graph are derived on load, never persisted as a competing database. Every
 relation retains the originating document ID or source path.
 
+Obsidian links resolve through stable IDs, filename stems, vault-relative path
+stems, and explicit frontmatter aliases. Unresolved links are retained as
+source-attributed `danglingLinks` diagnostics, rather than being silently
+treated as memory graph nodes.
+
 ## Selection policy
 
 The compiler scores direct matches against task requirements, services, tags,

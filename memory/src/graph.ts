@@ -1,4 +1,4 @@
-import type { GraphEdge, GraphNode, MemoryDocument, MemoryGraph } from "./models.js";
+import type { DanglingLink, GraphEdge, GraphNode, MemoryDocument, MemoryGraph } from "./models.js";
 
 function addNode(nodes: Map<string, GraphNode>, node: GraphNode): void {
   if (!nodes.has(node.id)) {
@@ -12,10 +12,39 @@ function addEdge(edges: GraphEdge[], edge: GraphEdge): void {
   }
 }
 
+function normalizeLinkTarget(value: string): string {
+  return value.trim().toLocaleLowerCase();
+}
+
+function sourcePathStem(sourcePath: string): string {
+  return sourcePath.replace(/\.md$/i, "");
+}
+
+function fileNameStem(sourcePath: string): string {
+  return sourcePathStem(sourcePath).split("/").at(-1)!;
+}
+
+function canonicalLinkTargets(documents: MemoryDocument[]): ReadonlyMap<string, string> {
+  const targets = new Map<string, string>();
+  for (const document of documents) {
+    for (const target of [document.id, sourcePathStem(document.sourcePath), fileNameStem(document.sourcePath), ...document.aliases]) {
+      const normalized = normalizeLinkTarget(target);
+      const existing = targets.get(normalized);
+      if (existing && existing !== document.id) {
+        throw new Error(`Ambiguous Obsidian link target '${target}' resolves to both '${existing}' and '${document.id}'.`);
+      }
+      targets.set(normalized, document.id);
+    }
+  }
+  return targets;
+}
+
 export function buildMemoryGraph(documents: MemoryDocument[]): MemoryGraph {
   const nodes = new Map<string, GraphNode>();
   const edges: GraphEdge[] = [];
   const knownIds = new Set(documents.map((document) => document.id));
+  const targets = canonicalLinkTargets(documents);
+  const danglingLinks: DanglingLink[] = [];
 
   for (const document of documents) {
     addNode(nodes, { id: document.id, kind: "memory", label: document.title });
@@ -39,9 +68,12 @@ export function buildMemoryGraph(documents: MemoryDocument[]): MemoryGraph {
     }
 
     for (const link of [...document.links, ...document.wikiLinks]) {
-      const id = knownIds.has(link) ? link : `reference:${link}`;
-      addNode(nodes, { id, kind: knownIds.has(link) ? "memory" : "reference", label: link });
-      addEdge(edges, { from: document.id, to: id, relation: "links-to" });
+      const targetId = targets.get(normalizeLinkTarget(link));
+      if (targetId) {
+        addEdge(edges, { from: document.id, to: targetId, relation: "links-to" });
+      } else if (!danglingLinks.some((item) => item.fromDocumentId === document.id && item.target === link)) {
+        danglingLinks.push({ fromDocumentId: document.id, target: link });
+      }
     }
   }
 
@@ -53,6 +85,9 @@ export function buildMemoryGraph(documents: MemoryDocument[]): MemoryGraph {
   return {
     nodes: graphNodes,
     edges: graphEdges,
+    danglingLinks: danglingLinks.sort((left, right) =>
+      `${left.fromDocumentId}:${left.target}`.localeCompare(`${right.fromDocumentId}:${right.target}`),
+    ),
     adjacentDocumentIds(documentId: string): string[] {
       const adjacent = new Set<string>();
       for (const edge of graphEdges) {

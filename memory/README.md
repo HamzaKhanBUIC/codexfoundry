@@ -17,7 +17,8 @@ npm test
 
 1. Load and validate Markdown frontmatter from `../vault`.
 2. Index stable IDs, services, requirements, evidence, tags, and Obsidian links.
-3. Resolve these relations into a traversable in-memory graph.
+3. Resolve IDs, filename stems, vault-relative paths, and frontmatter aliases
+   into a traversable in-memory graph with explicit dangling-link diagnostics.
 4. Assess freshness and calculate confidence from declared evidence, verification
    metadata, and age.
 5. Rank task-relevant documents deterministically.

@@ -22,6 +22,7 @@ export interface MemoryFrontmatter {
   services: string[];
   requirements: string[];
   tags: string[];
+  aliases: string[];
   links: string[];
   evidence: string[];
   verifiedCommit?: string;
@@ -63,7 +64,7 @@ export interface TaskInput {
 
 export interface GraphNode {
   id: string;
-  kind: "memory" | "service" | "requirement" | "evidence" | "reference";
+  kind: "memory" | "service" | "requirement" | "evidence";
   label: string;
 }
 
@@ -73,9 +74,15 @@ export interface GraphEdge {
   relation: "serves" | "addresses" | "evidenced-by" | "links-to";
 }
 
+export interface DanglingLink {
+  fromDocumentId: string;
+  target: string;
+}
+
 export interface MemoryGraph {
   nodes: GraphNode[];
   edges: GraphEdge[];
+  danglingLinks: DanglingLink[];
   adjacentDocumentIds(documentId: string): string[];
 }
 

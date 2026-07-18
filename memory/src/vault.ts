@@ -74,6 +74,7 @@ function parseFrontmatter(data: Record<string, unknown>, filePath: string): Memo
     services: asStringArray(data.services, "services", filePath),
     requirements: asStringArray(data.requirements, "requirements", filePath),
     tags: asStringArray(data.tags, "tags", filePath),
+    aliases: asStringArray(data.aliases, "aliases", filePath),
     links: asStringArray(data.links, "links", filePath),
     evidence: asStringArray(data.evidence, "evidence", filePath),
     verifiedCommit: data.verified_commit === undefined ? undefined : asString(data.verified_commit, "verified_commit", filePath),
