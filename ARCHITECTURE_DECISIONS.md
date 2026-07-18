@@ -467,3 +467,20 @@ trade-offs are recorded here.
 - **Consequences:** The dashboard can refresh the authoritative projection in
   local development. It remains incapable of changing a run, vault, Git state,
   or production system.
+
+## ADR-026 — Select memory against the task repository commit
+
+- **Status:** Accepted
+- **Milestone:** 4, Memory Pack contract correction
+- **Decision:** For an intake task pinned to the frozen PAY-17 baseline,
+  select only notes verified for that baseline; notes verified only for the
+  later approved repair are stale.
+- **Why:** Planning a repair must not treat its future outcome as trusted
+  context. Commit-aware freshness prevents causal leakage from repair evidence
+  into baseline analysis.
+- **Alternatives considered:** Select the repaired proof anyway; omit the
+  repository commit from intake; revise the vault solely to satisfy the test.
+- **Why rejected:** Each option weakens causality, freshness enforcement, or
+  the human-approved vault history.
+- **Consequences:** The integration contract selects `ARCH-001` for baseline
+  intake and explicitly omits `PROOF-001` as stale. The vault is unchanged.

@@ -79,11 +79,12 @@ describe("PAY-17 Memory Pack integration", () => {
         estimatedTokens: expect.any(Number),
         payloadSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
       });
-      expect(stored.sources.map((source) => source.id)).toEqual(["PROOF-001"]);
+      expect(stored.sources.map((source) => source.id)).toEqual(["ARCH-001"]);
       expect(stored.sources.every((source) => !("body" in source))).toBe(true);
       expect(stored.omittedSources).toContainEqual(expect.objectContaining({
-        id: "ARCH-001",
-        reason: "excluded because it does not add uncovered task coverage",
+        id: "PROOF-001",
+        freshness: "stale",
+        reason: "excluded because its verified knowledge is stale",
       }));
       expect(stored.omittedSources).toContainEqual(expect.objectContaining({ id: "INC-000", freshness: "stale" }));
       expect(stored.renderedPayload).toContain("# Memory Pack — PAY-17");
