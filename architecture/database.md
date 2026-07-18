@@ -21,3 +21,7 @@ tables must be added through explicit migrations. The database stores a
 repository commit, structured issue metadata, state transitions, timestamps,
 and failure reason only. It does not store vault bodies, credentials, or raw
 repository contents.
+
+Repository-map output is derived from the frozen fixture at run time and is
+not persisted as raw source content. Later run records may store its baseline
+commit and selected path identifiers only.

@@ -49,3 +49,24 @@ export interface RunTransitionEvent {
 export interface RunRecord extends FoundryRun {
   events: RunTransitionEvent[];
 }
+
+export interface RepositoryServiceMap {
+  id: "checkout-service" | "payment-gateway";
+  sourcePath: string;
+}
+
+export interface RepositoryCommandMap {
+  build: string;
+  health: string;
+  pay17: string;
+  browser: string;
+}
+
+export interface RepositoryMap {
+  rootPath: string;
+  commit: string;
+  services: RepositoryServiceMap[];
+  pay17TestPath: string;
+  browserTestPath: string;
+  commands: RepositoryCommandMap;
+}
