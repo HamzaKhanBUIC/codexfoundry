@@ -413,3 +413,22 @@ trade-offs are recorded here.
 - **Consequences:** The dashboard must label its evidence clearly and remain
   read-only in this slice. Later API work may replace local data with durable
   run records without changing the user-facing trust model.
+
+## ADR-023 — Project evidence artifacts into the dashboard at build time
+
+- **Status:** Accepted
+- **Milestone:** 4, artifact projection
+- **Decision:** Use a Vite virtual module to read the fixed PAY-17 verifier,
+  approval, vault-write, and regression JSON artifacts and expose a narrow,
+  read-only run projection to the React dashboard.
+- **Why:** Judge-visible values must come from recorded proof artifacts rather
+  than copied UI constants. A local build-time projection is portable and adds
+  no service, credential, or write authority.
+- **Alternatives considered:** Keep static UI values; add a live API now;
+  allow the UI to read arbitrary files in the browser.
+- **Why rejected:** Static values drift from evidence; a live API expands this
+  slice beyond its trust and persistence contract; browser file access is not
+  portable or safe.
+- **Consequences:** A missing required artifact prevents a valid dashboard
+  build. The projection is refreshed on rebuild or dev-server restart; later
+  API work must preserve the same artifact ownership and read-only default.

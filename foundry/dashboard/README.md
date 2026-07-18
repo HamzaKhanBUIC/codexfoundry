@@ -16,6 +16,8 @@ Open `http://127.0.0.1:4173`.
 
 ## First UI slice
 
-This first slice is intentionally read-only. It makes the existing evidence
+This first slice is intentionally read-only. At build or development-server
+start, it projects the local verifier, approval, vault-write, and regression
+JSON artifacts in `../evidence/` into the UI. It makes the existing evidence
 visible and keeps the human approval boundary intact. API-backed run creation,
-approval controls, and live artifact loading are separate follow-up slices.
+approval controls, and live updates are separate follow-up slices.

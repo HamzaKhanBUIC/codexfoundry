@@ -19,25 +19,9 @@ import {
   ShieldCheckmark20Filled,
   Warning20Regular,
 } from "@fluentui/react-icons";
+import run from "virtual:foundry-run";
 
 type View = "overview" | "evidence" | "memory";
-
-const timeline = [
-  ["Issue intake", "PAY-17 scoped to the checkout and payment boundaries."],
-  ["Memory Pack", "Fresh, verified engineering context selected from the vault."],
-  ["Plan approved", "Human approval limited Codex to two paths and four commands."],
-  ["Candidate repair", "Codex preserved the logical idempotency key across retries."],
-  ["Independent verification", "Baseline failed. Candidate unit and browser proofs passed."],
-  ["Memory write", "Incident, ADR, Proof, and Evaluation revisions approved."],
-  ["Regression replay", "Reintroduced mutation failed the unchanged PAY-17 proof."],
-] as const;
-
-const commandEvidence = [
-  ["Baseline PAY-17", "npm run test:pay-17", "Failed as expected", "Expected 1 payment, received 2"],
-  ["Candidate PAY-17", "npm run test:pay-17", "Passed", "Unchanged regression proof"],
-  ["Browser proof", "npm run test:browser", "Passed", "One payment after retry"],
-  ["Regression replay", "npm run test:pay-17", "Blocked", "Reintroduced mutation received 2 payments"],
-] as const;
 
 export function App() {
   const [view, setView] = useState<View>("overview");
@@ -64,10 +48,10 @@ export function App() {
       <section className="workspace">
         <header className="topbar">
           <div>
-            <Text className="breadcrumb" size={200}>Runs / RUN-PAY-17-001</Text>
-            <h1>Duplicate charge after checkout retry</h1>
+            <Text className="breadcrumb" size={200}>Runs / {run.taskId}</Text>
+            <h1>{run.title}</h1>
           </div>
-          <Badge appearance="filled" color="success" icon={<CheckmarkCircle20Filled />}>Complete with memory</Badge>
+          <Badge appearance="filled" color="success" icon={<CheckmarkCircle20Filled />}>{run.status} with memory</Badge>
         </header>
 
         <section className="run-banner" aria-label="Current run result">
@@ -118,7 +102,7 @@ function Overview({ evidenceOpen, onOpenEvidence }: { evidenceOpen: boolean; onO
         <Card className="panel">
           <CardHeader header={<Text weight="semibold">Execution timeline</Text>} description="A single high-risk payment repair, bounded by human approval and independent verification." />
           <ol className="timeline">
-            {timeline.map(([title, detail], index) => (
+            {run.timeline.map(([title, detail], index) => (
               <li key={title}>
                 <span className="timeline-index">{String(index + 1).padStart(2, "0")}</span>
                 <div><Text weight="semibold">{title}</Text><Text block size={300}>{detail}</Text></div>
@@ -134,9 +118,9 @@ function Overview({ evidenceOpen, onOpenEvidence }: { evidenceOpen: boolean; onO
           <Text className="verdict">Verified</Text>
           <Text size={300}>Baseline failure and candidate success were independently recorded.</Text>
           <Divider />
-          <div className="mini-metric"><span>Changed paths</span><strong>2</strong></div>
+          <div className="mini-metric"><span>Changed paths</span><strong>{run.changedPaths.length}</strong></div>
           <div className="mini-metric"><span>Proof commands</span><strong>4</strong></div>
-          <div className="mini-metric"><span>Vault revisions</span><strong>4</strong></div>
+          <div className="mini-metric"><span>Vault revisions</span><strong>{run.vaultRevisionCount}</strong></div>
           <Button appearance="secondary" icon={<ArrowRight20Regular />} onClick={onOpenEvidence}>Inspect proof</Button>
         </Card>
 
@@ -157,7 +141,7 @@ function Evidence({ compact = false }: { compact?: boolean }) {
     <Card className={compact ? "panel evidence-panel compact" : "panel evidence-panel"}>
       <CardHeader header={<Text weight="semibold">Command evidence</Text>} description={compact ? undefined : "Verifier-owned outputs. Implementer narration is never proof."} />
       <div className="evidence-list">
-        {commandEvidence.map(([label, command, status, detail]) => (
+        {run.commandEvidence.map(([label, command, status, detail]) => (
           <div className="evidence-row" key={label}>
             <div><Text weight="semibold">{label}</Text><code>{command}</code></div>
             <div className={status === "Blocked" ? "status blocked" : status.startsWith("Failed") ? "status expected" : "status pass"}>{status}</div>
@@ -177,8 +161,8 @@ function Memory() {
         <div className="memory-stats">
           <div><Database20Regular /><strong>INC-001</strong><span>Incident</span></div>
           <div><BranchFork20Regular /><strong>ADR-001</strong><span>Decision</span></div>
-          <div><ShieldCheckmark20Filled /><strong>PROOF-001</strong><span>Executable proof</span></div>
-          <div><DocumentBulletList20Regular /><strong>EVAL-001</strong><span>Regression replay</span></div>
+          <div><ShieldCheckmark20Filled /><strong>PROOF-001</strong><span>{run.proofContract}</span></div>
+          <div><DocumentBulletList20Regular /><strong>{run.evaluationId}</strong><span>{run.regressionStatus.replace("_", " ")}</span></div>
         </div>
       </Card>
       <Card className="panel">
@@ -186,7 +170,7 @@ function Memory() {
         <Text size={300}>The Planner and Implementer receive the measured Memory Pack, not the raw vault. Stale and omitted notes stay out of their context.</Text>
         <Divider />
         <div className="memory-detail"><Text weight="semibold">Direct pack sources</Text><Text block size={300}>ADR-001 and PROOF-001</Text></div>
-        <div className="memory-detail"><Text weight="semibold">Durable commit</Text><code>2a5d01f</code></div>
+        <div className="memory-detail"><Text weight="semibold">Durable commit</Text><code>{run.approvedCommit}</code></div>
       </Card>
     </div>
   );
