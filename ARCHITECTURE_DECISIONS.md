@@ -281,3 +281,21 @@ trade-offs are recorded here.
   verifier and judge timeline.
 - **Consequences:** G3D must rerun the proof independently against the same
   candidate. Only its evidence may advance the run to review.
+
+## ADR-016 — Require baseline failure and unmodified unit proof for PAY-17 verification
+
+- **Status:** Accepted
+- **Milestone:** Gate 3 independent verification
+- **Decision:** Verification records both the frozen baseline failure and the
+  repaired candidate success, while rejecting a candidate that changes the
+  PAY-17 unit proof itself or any path outside the approved boundary.
+- **Why:** A passing candidate test is meaningful only when the original test
+  proved the defect and the repair did not weaken its unit-level contract.
+- **Alternatives considered:** Verify only candidate green commands; trust the
+  implementer report; permit the proof test to change with the repair.
+- **Why rejected:** Candidate-only success lacks before/after causality;
+  implementer reports are not evidence; changing the core proof could mask a
+  regression.
+- **Consequences:** PAY-17 has an auditable fail-before/pass-after evidence
+  chain. Browser proof may evolve from reproduction to repaired behavior, but
+  the unit contract remains fixed.

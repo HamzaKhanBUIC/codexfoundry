@@ -1,0 +1,50 @@
+{
+  "runId": "RUN-PAY-17-001",
+  "taskId": "PAY-17",
+  "authority": "independent_verifier",
+  "status": "verified",
+  "proofContract": "one logical checkout persists one payment",
+  "candidate": {
+    "path": "C:\\Users\\Hamza Imran\\Desktop\\OpenAI Build Week\\.foundry-worktrees\\RUN-PAY-17-001",
+    "baselineCommit": "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+    "patchCommit": null,
+    "changedPaths": [
+      "src/services/checkout-service.ts",
+      "tests/browser/pay-17.spec.ts"
+    ],
+    "diffInspection": "Only policy-approved paths changed. The PAY-17 unit proof file was not modified. The checkout retry now sends request.idempotencyKey unchanged to PaymentGateway."
+  },
+  "baselineEvidence": {
+    "command": "npm run test:pay-17",
+    "exitCode": 1,
+    "expected": "failure before repair",
+    "stdout": "PAY-17: checkout retry idempotency failed: expected payment list length 1, received 2."
+  },
+  "candidateEvidence": [
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "stdout": "TypeScript check and Vite production build completed successfully."
+    },
+    {
+      "command": "npm run test:health",
+      "exitCode": 0,
+      "stdout": "2 test files passed; 2 tests passed."
+    },
+    {
+      "command": "npm run test:pay-17",
+      "exitCode": 0,
+      "stdout": "tests/payment-service.pay-17.test.ts passed; 1 test passed."
+    },
+    {
+      "command": "npm run test:browser",
+      "exitCode": 0,
+      "stdout": "Stable Google Chrome fallback selected; PAY-17 browser scenario captures one payment after retry; 1 passed."
+    }
+  ],
+  "limitations": [
+    "The verified repair remains an uncommitted candidate diff. No merge, deployment, or vault write was performed.",
+    "The proof used the documented local Chrome fallback rather than bundled Playwright Chromium."
+  ],
+  "nextState": "review_pending"
+}
