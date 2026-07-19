@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "fixture": "demo-store",
+  "baselineCommit": "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+  "bundle": "demo-store.bundle",
+  "requiredScripts": ["build", "test:health", "test:pay-17", "test:browser"],
+  "browserPolicy": {
+    "preferred": "bundled Playwright Chromium",
+    "fallback": "installed Chrome channel",
+    "setup": "npx playwright install chromium"
+  }
+}

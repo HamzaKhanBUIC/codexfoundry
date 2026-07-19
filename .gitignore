@@ -14,3 +14,6 @@ demo-store/
 
 # Isolated implementation worktrees live alongside the source repository.
 .codex-worktrees/
+
+# Materialized from release/demo-store.bundle by `npm run demo`; never a source fixture.
+.foundry-runtime/

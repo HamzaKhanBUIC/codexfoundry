@@ -13,16 +13,17 @@ may mark proof verified.
 ## 2. Current implementation status
 
 - Milestones 1–4 are functionally complete on the `codex/m4-proof-experience`
-  branch at `5c19ffe`.
+  branch at `f54bf84`.
 - Core validation: 11 test files / 27 tests pass; strict TypeScript build
   passes. Dashboard production build passes.
-- The release branch has not yet been integrated into `main`; the frozen nested
-  demo fixture is not present in this worktree. These are release blockers.
+- The release branch is intentionally unmerged from `main`. It packages the
+  frozen nested fixture as a Git bundle and materializes a verified local clone
+  for `npm run demo`; `main` remains untouched until explicit user approval.
 
 ## 3. Remaining work
 
-1. Tier 1: single-command demo, measured Memory Pack efficiency panel, proof
-   freshness display.
+1. Tier 1: release integration is complete; capture a real browser screenshot
+   or trace only when the finalized fixture scenario records one.
 2. Tier 2: interactive evidence-derived graph and recorded browser-proof
    artifact presentation when artifacts exist.
 3. Tier 3: judge documentation, startup errors, loading/empty states,
@@ -33,7 +34,7 @@ may mark proof verified.
 | Risk | Severity | Mitigation |
 |---|---:|---|
 | Current implementation is not on `main` | Critical | Create an explicit release integration branch; do not mutate frozen baseline. |
-| Fixture is absent from implementation worktree | Critical | Resolve a read-only fixture location in the release bootstrap; fail clearly when absent. |
+| Fixture provenance drifts | Critical | Bootstrap only a local clone from the bundled baseline and reject a commit mismatch. |
 | Browser proof depends on Chrome fallback | High | Detect/document browser availability and present only recorded evidence. |
 | Metrics could become fabricated | High | Render only persisted/compiler-derived values; label unavailable comparisons. |
 | Dashboard could imply authority | High | Keep all screens and API routes read-only. |
@@ -76,12 +77,12 @@ human approvals, memory provenance/freshness, and regression replay.
 
 ## 10. Release checklist
 
-- [ ] Tier 1 in progress: bootstrap added; metrics/freshness remain.
+- [x] Tier 1 complete: release bundle, fixture provenance preflight, browser preflight, and grounded metrics/freshness are included.
 - [ ] Tier 2 complete and validated.
 - [ ] Tier 3 complete and validated.
 - [ ] Release integration branch contains all current work.
-- [ ] Frozen PAY-17 fixture remains unchanged.
-- [ ] One command reports actionable prerequisite failures.
+- [x] Frozen PAY-17 fixture remains unchanged.
+- [x] One command reports actionable prerequisite failures.
 - [ ] All displayed metrics have recorded sources.
 - [ ] README and judge instructions are current.
 - [ ] `release/RELEASE_READINESS.md` completed with honest score.

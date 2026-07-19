@@ -502,3 +502,25 @@ trade-offs are recorded here.
   bypass approval contracts; a timeline cannot explain causal proof.
 - **Consequences:** The proof UI is transparent and read-only. New evidence
   kinds extend the projection schema and tests; they cannot confer authority.
+
+## ADR-028 — Package the frozen fixture as a baseline-only Git bundle
+
+- **Status:** Accepted
+- **Milestone:** 4, release integration
+- **Decision:** Include a Git bundle containing only `demo-store`'s immutable
+  baseline branch and a manifest of its commit, required commands, and browser
+  policy. `npm run demo` materializes it under an ignored local runtime path,
+  validates the exact commit and command contract, and never writes to the
+  source fixture.
+- **Why:** A clean release clone must be self-contained while preserving the
+  fixture's independent Git provenance and the rule that Foundry never mutates
+  the frozen baseline.
+- **Alternatives considered:** A Git submodule; copying fixture files into the
+  release repository; requiring a sibling checkout or remote clone.
+- **Why rejected:** A submodule or remote clone adds network/setup dependency;
+  copying loses the independently verifiable baseline history and risks source
+  drift.
+- **Consequences:** The release archive contains a small binary bundle and
+  produces an ignored materialized checkout on first run. Fixture changes
+  require an explicit new baseline and manifest update, never an implicit
+  bootstrap rewrite.
