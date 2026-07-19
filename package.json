@@ -1,0 +1,7 @@
+{
+  "name": "codex-foundry-release",
+  "private": true,
+  "scripts": {
+    "demo": "node release/demo.mjs"
+  }
+}

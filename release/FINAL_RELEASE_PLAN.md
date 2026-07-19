@@ -76,7 +76,7 @@ human approvals, memory provenance/freshness, and regression replay.
 
 ## 10. Release checklist
 
-- [ ] Tier 1 complete and validated.
+- [ ] Tier 1 in progress: bootstrap added; metrics/freshness remain.
 - [ ] Tier 2 complete and validated.
 - [ ] Tier 3 complete and validated.
 - [ ] Release integration branch contains all current work.
