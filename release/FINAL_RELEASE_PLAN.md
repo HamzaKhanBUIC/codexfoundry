@@ -13,7 +13,7 @@ may mark proof verified.
 ## 2. Current implementation status
 
 - Milestones 1–4 are functionally complete on the `codex/m4-proof-experience`
-  branch at `f54bf84`.
+  release branch at `520de8a`.
 - Core validation: 11 test files / 27 tests pass; strict TypeScript build
   passes. Dashboard production build passes.
 - The release branch is intentionally unmerged from `main`. It packages the
@@ -22,18 +22,16 @@ may mark proof verified.
 
 ## 3. Remaining work
 
-1. Tier 1: release integration is complete; capture a real browser screenshot
-   or trace only when the finalized fixture scenario records one.
-2. Tier 2: interactive evidence-derived graph and recorded browser-proof
-   artifact presentation when artifacts exist.
-3. Tier 3: judge documentation, startup errors, loading/empty states,
+1. Tier 2: interactive evidence-derived graph inspection (QA-04) and recorded
+   browser-proof artifact presentation only when an artifact exists.
+2. Tier 3: judge documentation, startup errors, loading/empty states,
    responsive and visual polish, release-readiness report.
 
 ## 4. Risks
 
 | Risk | Severity | Mitigation |
 |---|---:|---|
-| Current implementation is not on `main` | Critical | Create an explicit release integration branch; do not mutate frozen baseline. |
+| Current implementation is not on `main` | Medium | The self-contained release branch is validated; merge remains an explicit user decision and must not mutate the frozen baseline. |
 | Fixture provenance drifts | Critical | Bootstrap only a local clone from the bundled baseline and reject a commit mismatch. |
 | Browser proof depends on Chrome fallback | High | Detect/document browser availability and present only recorded evidence. |
 | Metrics could become fabricated | High | Render only persisted/compiler-derived values; label unavailable comparisons. |
@@ -43,21 +41,19 @@ may mark proof verified.
 
 | Tier | Effort | Risk |
 |---|---:|---:|
-| Tier 1 | Medium | Medium |
 | Tier 2 | Medium | Low–Medium |
 | Tier 3 | Medium | Low |
 
 ## 6. Priority ranking
 
-P0: release integration and one-command judge run. P1: measured context and
-freshness evidence. P2: interactive proof navigation and browser artifact.
-P3: documentation and visual hardening.
+P0: interactive proof navigation. P1: browser artifact presentation only if
+captured. P2: documentation and visual hardening.
 
 ## 7. Expected demo impact
 
-Tier 1 makes the claim runnable and measurable. Tier 2 makes causal evidence
-understandable in seconds. Tier 3 removes setup friction and makes the product
-feel deliberate rather than assembled.
+Tier 1 made the claim runnable and measurable. Tier 2 makes causal evidence
+inspectable in seconds. Tier 3 removes remaining setup friction and makes the
+product feel deliberate rather than assembled.
 
 ## 8. Expected judge impact
 
@@ -78,11 +74,11 @@ human approvals, memory provenance/freshness, and regression replay.
 ## 10. Release checklist
 
 - [x] Tier 1 complete: release bundle, fixture provenance preflight, browser preflight, and grounded metrics/freshness are included.
-- [ ] Tier 2 complete and validated.
+- [ ] Tier 2 complete and validated (QA-04 remains).
 - [ ] Tier 3 complete and validated.
-- [ ] Release integration branch contains all current work.
+- [x] Release integration branch contains the current packaged workflow.
 - [x] Frozen PAY-17 fixture remains unchanged.
 - [x] One command reports actionable prerequisite failures.
-- [ ] All displayed metrics have recorded sources.
-- [ ] README and judge instructions are current.
+- [x] Displayed Memory Pack metrics have recorded sources or an explicit unavailable label.
+- [ ] README and judge instructions are current (README updated; dedicated judge instructions remain Tier 3).
 - [ ] `release/RELEASE_READINESS.md` completed with honest score.
