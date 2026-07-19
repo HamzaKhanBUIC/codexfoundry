@@ -17,6 +17,24 @@ declare module "virtual:foundry-run" {
     memory: { estimatedTokens: number; tokenBudget: number; confidenceScore: number; naiveComparisonReason: string; included: readonly { id: string; type: string; confidence: string; freshness: string; reasonSelected: string; verification: string; evidenceReferences: string[]; }[]; omitted: readonly { id: string; type: string; confidence: string; freshness: string; reason: string; }[]; };
     evidence: readonly { id: string; kind: string; title: string; command?: string; exitCode?: number; content: string; authority: string; }[];
     metrics: readonly { label: string; value: string; detail: string; }[];
+    nodeInspectors?: Record<string, {
+      nodeId: string;
+      artifactType: string;
+      evidenceSource: string;
+      verificationStatus: "verified" | "approved" | "recorded" | "blocked";
+      confidence: string;
+      freshness: string;
+      causalExplanation: string;
+      limitations: string[];
+      relatedEvidence: string[];
+    }>;
+    edgeInspectors?: Record<string, {
+      fromId: string;
+      toId: string;
+      relationship: string;
+      causalExplanation: string;
+      evidenceBasis: string;
+    }>;
   }
 
   const run: FoundryRunProjection;

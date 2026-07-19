@@ -21,7 +21,7 @@ evidence-backed state without rewriting audit history.
 | QA-01: release clone lacked the immutable fixture. | `520de8a` adds a baseline-only Git bundle and manifest. The bootstrap materializes an ignored clone and rejects a provenance mismatch. | Resolved. |
 | QA-02: one command could not validate the whole scenario from a clean clone. | `npm run demo` now validates fixture files, baseline commit, required scripts, and browser availability before starting local services. | Resolved. |
 | QA-03: Memory Pack display facts were hard-coded. | `f54bf84` adds a compiler-derived snapshot; the projection displays recorded token, budget, confidence, source, and omission facts. | Resolved. |
-| QA-04: Proof Graph was display-only. | The graph remains intentionally read-only and display-only. No inspection interaction has yet been implemented. | Open; next work. |
+| QA-04: Proof Graph was display-only. | Every declared node and edge now has an evidence-derived inspector with keyboard interaction, selection state, causal explanation, and an explicit read-only boundary. | Resolved. |
 | QA-05: mobile graph clipped. | Responsive CSS changes the graph into a vertical sequence on small screens. | Resolved. |
 | QA-06: browser evidence could imply an absent visual artifact. | The UI now says explicitly when no screenshot or trace was recorded. | Partially resolved; capture is optional and must be real. |
 | QA-07: no grounded memory metrics. | The recorded pack reports 715 estimated tokens, a 12,000 token budget, and confidence `1`; no naïve comparison is claimed because none was recorded. | Resolved honestly. |
@@ -37,9 +37,9 @@ surface. In scope terms:
 | Scope area | Progress |
 |---|---|
 | Core PAY-17 workflow (Milestones 1–3) | Complete and recorded. |
-| Proof dashboard (Milestone 4) | Functionally complete; one interaction-quality item remains. |
+| Proof dashboard (Milestone 4) | Complete for the scoped proof experience; node and edge inspection remain read-only. |
 | Self-contained local release (Tier 1) | Complete on the release branch. |
-| Final judge readiness (Tiers 2–3) | In progress; QA-04 and polish/documentation remain. |
+| Final judge readiness (Tier 3) | In progress; judge documentation and polish remain. |
 | `main` integration | Deliberately pending explicit user authorization. |
 
 ## Claims that must remain precise
@@ -56,9 +56,8 @@ surface. In scope terms:
 
 ## Remaining documentation work
 
-1. Complete QA-04 and document the final read-only graph inspection contract.
-2. Add dedicated judge run instructions and a final release-readiness score.
-3. If a real browser screenshot or trace is recorded, add it as a referenced
+1. Add dedicated judge run instructions and a final release-readiness score.
+2. If a real browser screenshot or trace is recorded, add it as a referenced
    evidence artifact; otherwise retain the explicit absence label.
 
 For detailed implementation, validation, and release constraints, read

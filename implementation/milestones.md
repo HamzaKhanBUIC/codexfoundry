@@ -44,7 +44,7 @@ Harden the deterministic demo, measure metrics, add tests/documentation, capture
 | Milestone 3 | Complete | Persisted task state, bounded plan and Codex contracts, disposable candidate, independent verifier, separate approvals, vault revisions, and regression replay. |
 | Milestone 4 | Functionally complete | Read-only dashboard, versioned evidence projection, local read API, grounded Memory Pack metrics, and responsive proof graph. |
 | Release Tier 1 | Complete | One-command bootstrap with immutable baseline bundle, commit/script/browser preflight, and Windows cleanup. |
-| Release Tier 2 | Next | QA-04: interactive, evidence-derived, read-only graph inspection. |
+| Release Tier 2 | Complete | QA-04: interactive, evidence-derived, keyboard-accessible, read-only graph inspection. |
 | Release Tier 3 | Pending | Judge instructions, final visual/error-state hardening, real browser artifact only if recorded, and readiness report. |
 
 The historical QA report is intentionally retained as a point-in-time audit.

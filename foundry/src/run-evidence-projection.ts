@@ -35,6 +35,8 @@ export interface FoundryRunProjection {
   memory: MemoryTransparency & { estimatedTokens: number; tokenBudget: number; confidenceScore: number; naiveComparisonReason: string; };
   evidence: readonly EvidenceItem[];
   metrics: readonly MeasuredMetric[];
+  nodeInspectors?: Record<string, NodeInspector>;
+  edgeInspectors?: Record<string, EdgeInspector>;
 }
 
 export interface ProofNode { id: string; label: string; kind: string; status: "verified" | "approved" | "recorded" | "blocked"; }
@@ -45,6 +47,47 @@ export interface MemoryTransparency { included: readonly MemoryNote[]; omitted: 
 export interface MemoryNote { id: string; type: string; confidence: string; freshness: string; reasonSelected: string; verification: string; evidenceReferences: string[]; }
 export interface OmittedMemoryNote { id: string; type: string; confidence: string; freshness: string; reason: string; }
 export interface MeasuredMetric { label: string; value: string; detail: string; }
+
+export interface NodeInspector {
+  nodeId: string;
+  artifactType: string;
+  evidenceSource: string;
+  verificationStatus: ProofNode["status"];
+  confidence: string;
+  freshness: string;
+  causalExplanation: string;
+  limitations: string[];
+  relatedEvidence: string[];
+}
+
+export interface EdgeInspector {
+  fromId: string;
+  toId: string;
+  relationship: string;
+  causalExplanation: string;
+  evidenceBasis: string;
+}
+
+function assertInspectorCoverage(projection: FoundryRunProjection): void {
+  if (!projection.nodeInspectors || !projection.edgeInspectors) {
+    throw new Error("Interactive proof inspection requires complete inspector records.");
+  }
+
+  for (const node of projection.proofGraph.nodes) {
+    const inspector = projection.nodeInspectors[node.id];
+    if (!inspector || inspector.nodeId !== node.id || inspector.verificationStatus !== node.status) {
+      throw new Error(`Missing or inconsistent inspector record for proof node '${node.id}'.`);
+    }
+  }
+
+  for (const edge of projection.proofGraph.edges) {
+    const edgeId = `${edge.from}->${edge.to}`;
+    const inspector = projection.edgeInspectors[edgeId];
+    if (!inspector || inspector.fromId !== edge.from || inspector.toId !== edge.to || inspector.relationship !== edge.label) {
+      throw new Error(`Missing or inconsistent inspector record for proof edge '${edgeId}'.`);
+    }
+  }
+}
 
 function artifact<T>(evidenceDirectory: string, fileName: string): T {
   return JSON.parse(readFileSync(path.join(evidenceDirectory, fileName), "utf8")) as T;
@@ -85,7 +128,7 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
     throw new Error("Required approval or vault-write evidence is malformed.");
   }
 
-  return {
+  const projection: FoundryRunProjection = {
     schemaVersion: "1.0",
     taskId: verifier.taskId,
     title: "Duplicate charge after checkout retry",
@@ -152,5 +195,27 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
       { label: "Regression status", value: replay.status, detail: "Unchanged PAY-17 proof blocked the deliberate mutation." },
       { label: "Memory Pack", value: `${memoryPack.estimatedTokens} / ${memoryPack.tokenBudget}`, detail: memoryPack.naiveComparisonReason },
     ],
+    nodeInspectors: {
+      issue: { nodeId: "issue", artifactType: "Requirement", evidenceSource: "Task intake (PAY-17)", verificationStatus: "recorded", confidence: "n/a", freshness: "n/a", causalExplanation: "Defines the defect that must be repaired.", limitations: ["Untrusted input; does not grant permissions or policy."], relatedEvidence: [] },
+      memory: { nodeId: "memory", artifactType: "Context", evidenceSource: "RUN-PAY-17-001-memory-pack.json", verificationStatus: "recorded", confidence: String(memoryPack.confidenceScore), freshness: memoryPack.sources[0]?.freshness ?? "fresh", causalExplanation: "Provides fresh, verified context to Codex while excluding stale future-repair knowledge.", limitations: ["Derived from the vault, but grants no authority to write back to the vault."], relatedEvidence: [] },
+      plan: { nodeId: "plan", artifactType: "Human gate", evidenceSource: "Human plan approval", verificationStatus: "approved", confidence: "n/a", freshness: "n/a", causalExplanation: "Restricts Codex implementation to a specific bounded diff.", limitations: ["Only authorizes a disposable worktree; no direct repository merge."], relatedEvidence: [] },
+      worktree: { nodeId: "worktree", artifactType: "Isolated change", evidenceSource: "RUN-PAY-17-001-implementation.json", verificationStatus: "recorded", confidence: implementation.implementerReport.confidence, freshness: "n/a", causalExplanation: "Produces a candidate patch under the approved plan.", limitations: ["This is an implementer artifact, not independent proof. It is non-authoritative."], relatedEvidence: implementation.commandLogs.map(log => `implementer:${log.command}`) },
+      verification: { nodeId: "verification", artifactType: "Proof", evidenceSource: "RUN-PAY-17-001-verifier.json", verificationStatus: "verified", confidence: "1", freshness: "n/a", causalExplanation: "Proves the unmodified baseline fails and the candidate patch passes.", limitations: ["Does not automatically merge the patch or write to the vault."], relatedEvidence: ["verifier:diff", "verifier:baseline", "verifier:browser", "verifier:summary"] },
+      patch: { nodeId: "patch", artifactType: "Human gate", evidenceSource: "RUN-PAY-17-001-human-approval.json", verificationStatus: "approved", confidence: "n/a", freshness: "n/a", causalExplanation: "Authorizes the specific verified candidate commit.", limitations: ["Approval created a commit only in the disposable candidate worktree.", "No merge, deploy, or Obsidian vault write is authorized by this decision."], relatedEvidence: [] },
+      vault: { nodeId: "vault", artifactType: "Durable memory", evidenceSource: "RUN-PAY-17-001-vault-write.json", verificationStatus: "approved", confidence: "n/a", freshness: "n/a", causalExplanation: "Saves verified repair knowledge for future AI sessions.", limitations: ["Vault writes are explicit separate actions from code patches."], relatedEvidence: [] },
+      replay: { nodeId: "replay", artifactType: "Evaluation", evidenceSource: "RUN-PAY-17-001-regression-replay.json", verificationStatus: "blocked", confidence: "n/a", freshness: "n/a", causalExplanation: "Proves that if Codex hallucinates the same defect later, the test suite blocks it.", limitations: ["The regression candidate must not be merged or written to the vault."], relatedEvidence: [] }
+    },
+    edgeInspectors: {
+      "issue->memory": { fromId: "issue", toId: "memory", relationship: "scopes context", causalExplanation: "The issue description determines which vault notes are relevant to compile.", evidenceBasis: "Memory Pack compiler input criteria." },
+      "memory->plan": { fromId: "memory", toId: "plan", relationship: "bounds proposal", causalExplanation: "The structured plan is derived from the memory pack constraints.", evidenceBasis: "Planner input contract." },
+      "plan->worktree": { fromId: "plan", toId: "worktree", relationship: "permits paths/commands", causalExplanation: "The disposable worktree restricts Codex to the human-approved paths.", evidenceBasis: "Worktree policy allowlist." },
+      "worktree->verification": { fromId: "worktree", toId: "verification", relationship: "candidate tested", causalExplanation: "The candidate patch must be independently verified against the unchanged baseline proof.", evidenceBasis: "RUN-PAY-17-001-verifier.json" },
+      "verification->patch": { fromId: "verification", toId: "patch", relationship: "evidence enables review", causalExplanation: "Human review requires verifier success evidence before patch approval.", evidenceBasis: "RUN-PAY-17-001-human-approval.json prerequisite." },
+      "patch->vault": { fromId: "patch", toId: "vault", relationship: "proposes durable notes", causalExplanation: "Only an approved patch can generate new durable Incident and Proof memory.", evidenceBasis: "Vault write requirements." },
+      "vault->replay": { fromId: "vault", toId: "replay", relationship: "saved evaluation detects regression", causalExplanation: "The newly saved evaluation protects the patch from future regressions.", evidenceBasis: "RUN-PAY-17-001-regression-replay.json" }
+    }
   };
+
+  assertInspectorCoverage(projection);
+  return projection;
 }

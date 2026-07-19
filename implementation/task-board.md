@@ -15,7 +15,7 @@
 - [x] Implement plan approval and proof-contract display.
 - [x] Implement Codex worktree patch loop.
 - [x] Implement verifier: test, browser check, evidence persistence.
-- [x] Implement Proof Graph UI (display-only; QA-04 interactive inspection remains).
+- [x] Implement Proof Graph UI with evidence-derived, keyboard-accessible, read-only node and edge inspection.
 - [x] Implement staged/approved vault write-back.
 - [x] Implement saved regression evaluation and deliberate failure demo.
 - [x] Measure and display context-efficiency methodology/results (recorded pack size, budget, confidence, and honest unavailable naïve baseline).

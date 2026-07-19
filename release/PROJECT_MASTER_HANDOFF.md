@@ -3,15 +3,15 @@
 **Audience:** the next Lead Architect, implementation agent, reviewer, and
 release agent.
 
-**Current release branch:** `codex/m4-proof-experience` at `520de8a`.
+**Current release branch:** `codex/m4-proof-experience`; verify `HEAD` before
+making release claims.
 
 **Frozen fixture baseline:** `demo-store` commit
 `1169dafdc3d1f18fed2adca11ce900a15a67cfd3`.
 
-**Status:** Milestones 1–4 are implemented on the release branch. The product
-is not merged to `main` by design. The next work is release Tier 2: an
-interactive, entirely read-only Proof Graph; after that, Tier 3 judge
-documentation, polish, and final readiness validation.
+**Status:** Milestones 1–4 and Release Tier 2 are implemented on the release
+branch. The product is not merged to `main` by design. The next work is Tier 3
+judge documentation, polish, and final readiness validation.
 
 ---
 
@@ -140,9 +140,9 @@ or conceal the human gates.
 | Milestone 1 audit fixes | Complete | Parallel-safe browser sessions, idempotency-key lifecycle, suite separation, browser fallback, clean baseline. |
 | Milestone 2 — Engineering Memory | Complete | Obsidian-compatible schemas, deterministic index/graph/compiler/scoring. |
 | Gates 0–3 / Milestone 3 workflow | Complete | Trusted intake, persisted pack, plan contract, worktree policy, verification, approvals, vault revisions, regression replay. |
-| Milestone 4 — proof experience | Functionally complete; release Tier 2 remains | Read-only dashboard, projection, local read API, grounded Memory Pack metrics, responsive graph. |
+| Milestone 4 — proof experience | Complete | Read-only dashboard, projection, local read API, grounded Memory Pack metrics, responsive graph, and typed graph inspection. |
 | Release Tier 1 | Complete on release branch | One-command demo bootstrap, immutable fixture bundle, provenance/browser preflight. |
-| Release Tier 2 | Next | Interactive, evidence-derived read-only graph; record browser visual artifact only if truly produced. |
+| Release Tier 2 | Complete | Every declared graph node and edge is inspectable through typed, evidence-derived, keyboard-accessible, read-only details. |
 | Release Tier 3 | Pending | Judge instructions, loading/error states, visual polish, final readiness report. |
 | Merge to `main` | Pending explicit instruction | `main` intentionally remains untouched. Do not merge automatically. |
 
@@ -258,8 +258,9 @@ Locations: `foundry/dashboard/`, `foundry/src/run-evidence-projection.ts`,
   - explicit statement that no naïve-context baseline was recorded.
 - Browser evidence honestly states when no screenshot or trace was recorded.
 - Mobile Proof Graph stacks vertically so later proof stages remain discoverable.
-- The graph is still display-only. Interactive node/edge inspection is the
-  next permitted enhancement (QA-04).
+- The graph supports keyboard and pointer inspection of every declared node
+  and edge. The core fails closed when a declared graph item lacks its typed
+  inspector record; no graph interaction has action authority.
 
 ### E. Release integration — Tier 1
 
@@ -355,7 +356,7 @@ this update.
 | QA-01: release clone lacked fixture | Resolved by `520de8a`: baseline-only bundle + manifest + materialized local clone. |
 | QA-02: one-command demo could not validate live fixture | Resolved by `520de8a`: commit/scripts/browser preflight before API/dashboard readiness. |
 | QA-03: Memory Pack facts were hard-coded | Resolved by `f54bf84`: recorded compiler snapshot drives values and omission metadata. |
-| QA-04: graph not interactive | **Open.** Add only read-only node/edge inspection derived from `FoundryRunProjection`. |
+| QA-04: graph not interactive | Resolved: typed, evidence-derived node/edge inspectors with native controls, keyboard access, and no write authority. |
 | QA-05: mobile graph clipped | Resolved by `f54bf84`: vertical mobile graph. |
 | QA-06: browser evidence implied a visual artifact | Partially resolved by `f54bf84`: UI explicitly says no screenshot/trace exists. A real artifact remains optional and may only be shown after actual capture. |
 | QA-07: no grounded memory metrics | Resolved by `f54bf84`: pack size/budget/confidence shown; naïve baseline honestly unavailable. |
@@ -378,7 +379,7 @@ OpenAI Build Week-m4/                 # Current release worktree
 │   ├── tests/                        # core contracts
 │   └── dashboard/                    # Fluent UI judge proof experience
 ├── release/                          # bundle, bootstrap, QA/release/handoff docs
-├── ARCHITECTURE_DECISIONS.md         # ADR-001 through ADR-028
+├── ARCHITECTURE_DECISIONS.md         # ADR-001 through ADR-029
 └── package.json                      # `npm run demo`
 
 OpenAI Build Week/demo-store/         # Separate, frozen source fixture
@@ -388,34 +389,16 @@ OpenAI Build Week/demo-store/         # Separate, frozen source fixture
 
 ## 9. Exact Next Work — Do Not Expand Scope
 
-### Next: Release Tier 2 / QA-04
+### Next: Tier 3 release hardening
 
-Implement an interactive causal Proof Graph that remains wholly read-only:
-
-- Clicking a node reveals its artifact type, originating evidence artifact,
-  verification status, confidence, freshness, and causal explanation.
-- Clicking an edge explains why that relationship exists.
-- Derive everything from `FoundryRunProjection`; do not invent nodes, edges,
-  authority, confidence, freshness, or approval state.
-- Preserve Fluent UI and keyboard accessibility.
-- Add focused tests, run Foundry tests and dashboard build, update release plan
-  and ADR if the projection contract changes.
+- Add concise judge README and one-command run instructions.
+- Verify loading, empty, and network-error states without fabricating evidence.
+- Capture a browser screenshot or trace only by running the final real scenario
+  with capture enabled; otherwise retain the explicit absence label.
+- Run full release validation and produce `release/RELEASE_READINESS.md` with
+  an evidence-backed score and remaining limitations.
 - Never add approval buttons, commands, vault writes, merge controls, or API
   writes.
-
-### Then: Tier 3 release hardening
-
-- Add concise judge README/run instructions.
-- Add/verify loading, empty, and network-error states without fabricating
-  evidence.
-- Capture a browser screenshot or trace only by running the final real scenario
-  with capture enabled; if absent, keep the honest absence label.
-- Run full release validation again.
-- Produce `release/RELEASE_READINESS.md` with an evidence-backed score and
-  remaining limitations.
-- Request explicit user authorization before merging anything to `main`.
-
----
 
 ## 10. Guidance for the Next AI Agent
 
@@ -446,8 +429,8 @@ replay is the central reason this can stand out in a highly competitive
 Developer Tools field.
 
 **Remaining risk:** not breadth, but presentation and release discipline. The
-project must finish the interactive proof explanation, make the one-command
-path effortless for judges, and avoid unsupported performance/security claims.
+project must make the one-command path effortless for judges and avoid
+unsupported performance or security claims.
 
 **Decision:** continue with the existing roadmap. Do not generate new product
-ideas or broaden scope before Tier 2 and Tier 3 are complete.
+ideas or broaden scope before Tier 3 is complete.

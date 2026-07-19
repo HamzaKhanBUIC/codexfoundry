@@ -33,13 +33,35 @@ code { color: #3f4755; font-family: "Cascadia Code", Consolas, monospace; font-s
 .panel .fui-CardHeader { padding: 18px 18px 8px; }
 .proof-panel { overflow: hidden; }
 .proof-graph { display: flex; align-items: stretch; overflow-x: auto; padding: 22px 18px 8px; }
-.graph-node { display: grid; gap: 5px; min-width: 116px; padding: 13px; border: 1px solid #dce2e9; border-radius: 8px; background: #fafbfc; }
+.graph-node { display: grid; gap: 5px; min-width: 116px; padding: 13px; border: 1px solid #dce2e9; border-radius: 8px; background: #fafbfc; color: inherit; font: inherit; text-align: left; }
 .graph-node strong { font-size: 0.88rem; }
 .graph-node span { color: #687487; font-size: 0.75rem; line-height: 1.25; }
 .graph-node.amber { border-color: #e5b883; background: #fff8ef; }
 .graph-node.green { border-color: #9ec7af; background: #f3faf5; }
-.graph-line { align-self: center; min-width: 28px; height: 1px; background: #b4bfce; position: relative; }
-.graph-line::after { content: ""; position: absolute; top: -3px; right: 0; width: 7px; height: 7px; border-right: 1px solid #8390a0; border-top: 1px solid #8390a0; transform: rotate(45deg); }
+.graph-node.selected { border-color: #c46a12; box-shadow: 0 0 0 1px #c46a12, 0 4px 12px rgba(196, 106, 18, 0.15); }
+.graph-node[type="button"] { cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
+.graph-node[type="button"]:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(32, 38, 50, 0.08); }
+.graph-node:focus-visible { outline: 2px solid #c46a12; outline-offset: 2px; }
+.graph-line-container { align-self: center; display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; cursor: pointer; background: transparent; border: 0; padding: 0; position: relative; border-radius: 4px; }
+.graph-line-container:focus-visible { outline: 2px solid #c46a12; outline-offset: -2px; }
+.graph-line { width: 100%; height: 1px; background: #b4bfce; position: relative; transition: background 0.1s; pointer-events: none; }
+.graph-line::after { content: ""; position: absolute; top: -3px; right: 0; width: 7px; height: 7px; border-right: 1px solid #8390a0; border-top: 1px solid #8390a0; transform: rotate(45deg); transition: border-color 0.1s; pointer-events: none; }
+.graph-line-container:hover .graph-line { background: #8390a0; }
+.graph-line-container:hover .graph-line::after { border-color: #556173; }
+.graph-line-container.selected .graph-line { background: #c46a12; height: 2px; }
+.graph-line-container.selected .graph-line::after { border-color: #c46a12; border-width: 2px; top: -4px; right: -1px; }
+.inspector-panel { background: #fffaf4; border: 1px solid #e7caa7; border-radius: 8px; margin: 0 18px 18px; }
+.inspector-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px 10px; border-bottom: 1px solid #f6dfc6; }
+.inspector-header h3 { margin: 0; font-size: 0.95rem; color: #29313d; }
+.inspector-dismiss { border: 1px solid #d29a62; border-radius: 4px; background: #fff; color: #7a410d; cursor: pointer; font: inherit; padding: 5px 8px; }
+.inspector-dismiss:hover { background: #fff3e5; }
+.inspector-dismiss:focus-visible { outline: 2px solid #c46a12; outline-offset: 2px; }
+.inspector-field { display: flex; flex-direction: column; gap: 4px; padding: 12px 18px; border-bottom: 1px solid #f6dfc6; }
+.inspector-field:last-child { border-bottom: none; padding-bottom: 18px; }
+.inspector-field strong { font-size: 0.75rem; color: #9c4f08; text-transform: uppercase; letter-spacing: 0.05em; }
+.inspector-field span { font-size: 0.9rem; color: #4c5869; }
+.inspector-field .fui-Badge { align-self: flex-start; }
+.inspector-limitations { padding-left: 24px; margin: 0; font-size: 0.9rem; color: #8b5a16; }
 .proof-note { display: flex; gap: 8px; align-items: center; padding: 14px 18px 18px; color: #4c5869; }
 .timeline { display: grid; gap: 0; margin: 6px 0 0; padding: 0 18px 18px; list-style: none; }
 .timeline li { display: grid; grid-template-columns: 36px 1fr; gap: 11px; position: relative; padding: 11px 0; }
@@ -103,7 +125,12 @@ code { color: #3f4755; font-family: "Cascadia Code", Consolas, monospace; font-s
   .run-banner button { width: 100%; }
   .nav-list { grid-template-columns: 1fr; }
   .proof-graph { display:grid; grid-template-columns:1fr; overflow:visible; padding:16px 18px; }
-  .graph-node { min-width:0; }.graph-line { justify-self:center; min-width:1px; width:1px; height:22px; }.graph-line::after { top:auto; bottom:0; right:-3px; transform:rotate(135deg); }
+  .graph-node { min-width:0; }
+  .graph-line-container { justify-self: center; min-width: 44px; min-height: 44px; width: 44px; }
+  .graph-line { width: 1px; height: 100%; min-height: 22px; }
+  .graph-line::after { top:auto; bottom:0; right:-3px; transform:rotate(135deg); }
+  .graph-line-container.selected .graph-line { width: 2px; }
+  .graph-line-container.selected .graph-line::after { right: -4px; bottom: -1px; }
   .evidence-row { grid-template-columns: 1fr; gap: 7px; }
   .memory-stats { grid-template-columns: 1fr; }
 }

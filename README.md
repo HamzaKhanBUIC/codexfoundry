@@ -15,8 +15,8 @@ Release Tier 1 is also complete: `npm run demo` materializes an immutable
 baseline-only fixture bundle, verifies its provenance and prerequisites, then
 starts the local Foundry API and dashboard. The frozen source fixture and
 `main` remain unchanged. The remaining product work is deliberately narrow:
-interactive, read-only Proof Graph inspection (QA-04), then final judge
-documentation and polish.
+final judge documentation and polish. The Proof Graph is interactive but
+remains strictly read-only.
 
 ## Read first
 

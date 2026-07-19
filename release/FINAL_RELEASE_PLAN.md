@@ -22,9 +22,7 @@ may mark proof verified.
 
 ## 3. Remaining work
 
-1. Tier 2: interactive evidence-derived graph inspection (QA-04) and recorded
-   browser-proof artifact presentation only when an artifact exists.
-2. Tier 3: judge documentation, startup errors, loading/empty states,
+1. Tier 3: judge documentation, startup errors, loading/empty states,
    responsive and visual polish, release-readiness report.
 
 ## 4. Risks
@@ -41,17 +39,16 @@ may mark proof verified.
 
 | Tier | Effort | Risk |
 |---|---:|---:|
-| Tier 2 | Medium | Low–Medium |
 | Tier 3 | Medium | Low |
 
 ## 6. Priority ranking
 
-P0: interactive proof navigation. P1: browser artifact presentation only if
-captured. P2: documentation and visual hardening.
+P0: documentation and visual hardening. P1: browser artifact presentation
+only if captured.
 
 ## 7. Expected demo impact
 
-Tier 1 made the claim runnable and measurable. Tier 2 makes causal evidence
+Tier 1 made the claim runnable and measurable. Tier 2 made causal evidence
 inspectable in seconds. Tier 3 removes remaining setup friction and makes the
 product feel deliberate rather than assembled.
 
@@ -74,7 +71,8 @@ human approvals, memory provenance/freshness, and regression replay.
 ## 10. Release checklist
 
 - [x] Tier 1 complete: release bundle, fixture provenance preflight, browser preflight, and grounded metrics/freshness are included.
-- [ ] Tier 2 complete and validated (QA-04 remains).
+- [x] Tier 2 complete and validated: every declared node and edge has a typed,
+  evidence-derived, keyboard-accessible, read-only inspector.
 - [ ] Tier 3 complete and validated.
 - [x] Release integration branch contains the current packaged workflow.
 - [x] Frozen PAY-17 fixture remains unchanged.

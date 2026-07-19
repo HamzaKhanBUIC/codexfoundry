@@ -522,5 +522,14 @@ trade-offs are recorded here.
   drift.
 - **Consequences:** The release archive contains a small binary bundle and
   produces an ignored materialized checkout on first run. Fixture changes
-  require an explicit new baseline and manifest update, never an implicit
   bootstrap rewrite.
+
+## ADR-029 — Extend the evidence projection schema for interactive proof inspection
+
+- **Status:** Accepted
+- **Milestone:** 4, QA-04
+- **Decision:** Make the causal proof graph interactive by adding optional `nodeInspectors` and `edgeInspectors` to the `FoundryRunProjection` schema and passing them through the read-only dashboard layout without parsing raw evidence artifacts in the UI.
+- **Why:** The dashboard must allow a user to inspect why a node or edge exists (its authority, verification state, and causal explanation) without violating the central architectural rule that only the core may interpret or grant authority from evidence (ADR-024).
+- **Alternatives considered:** Parsing raw artifacts directly in React components; adding a backend API for specific node/edge queries.
+- **Why rejected:** Direct artifact parsing in UI violates trust/authority boundaries; adding an API undermines the static, offline-capable projection model.
+- **Consequences:** The projection contract remains backward-compatible (`schemaVersion: "1.0"`). The same single projection is available through the virtual-module fallback and the fixed local read API; neither delivery path grants dashboard write authority. The core fails closed if a declared proof node or edge lacks a matching inspector record.

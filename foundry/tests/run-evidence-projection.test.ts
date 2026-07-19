@@ -16,5 +16,15 @@ describe("PAY-17 proof view projection", () => {
     expect(view.memory).toMatchObject({ estimatedTokens: 715, tokenBudget: 12000, confidenceScore: 1 });
     expect(JSON.stringify(view.memory.omitted)).not.toContain("historical incident predates");
     expect(view.evidence.some((item) => item.authority === "independent_verifier")).toBe(true);
+    expect(view.nodeInspectors).toBeDefined();
+    expect(view.edgeInspectors).toBeDefined();
+    for (const node of view.proofGraph.nodes) {
+      expect(view.nodeInspectors?.[node.id]).toMatchObject({ nodeId: node.id, verificationStatus: node.status });
+    }
+    for (const edge of view.proofGraph.edges) {
+      expect(view.edgeInspectors?.[`${edge.from}->${edge.to}`]).toMatchObject({ fromId: edge.from, toId: edge.to, relationship: edge.label });
+    }
+    expect(view.nodeInspectors?.verification.relatedEvidence).toContain("verifier:browser");
+    expect(view.edgeInspectors?.["worktree->verification"].evidenceBasis).toBe("RUN-PAY-17-001-verifier.json");
   });
 });
