@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "fixture": "demo-store",
-  "baselineCommit": "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+  "baselineCommit": "93ef28fa1737767a4a0c3b38fa8f9a6158980bb6",
   "bundle": "demo-store.bundle",
   "requiredScripts": ["build", "test:health", "test:pay-17", "test:browser"],
   "browserPolicy": {

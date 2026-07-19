@@ -4,8 +4,9 @@
   "approval": "APPROVE VAULT WRITE",
   "status": "completed",
   "stagedBundleCommit": "7872af8",
-  "approvedCandidateCommit": "2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b",
+  "approvedCandidateCommit": "63417cadd2ed28ec0a0dd7832be900285119c885",
   "writtenTargets": [
+    "vault/architecture/ARCH-001-checkout-flow.md",
     "vault/incidents/INC-001-pay-17-duplicate-charge.md",
     "vault/adrs/ADR-001-payment-retry-idempotency.md",
     "vault/proofs/PROOF-001-pay-17-single-payment.md",
@@ -14,7 +15,7 @@
   "validation": {
     "memoryTests": "18 passed",
     "memoryBuild": "passed",
-    "typedEvidence": "all four documents parsed",
+    "typedEvidence": "all five documents parsed",
     "stagedContent": "matches live vault content after CRLF/LF normalization"
   },
   "notes": [

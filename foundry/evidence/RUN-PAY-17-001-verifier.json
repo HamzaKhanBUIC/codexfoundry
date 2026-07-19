@@ -5,9 +5,9 @@
   "status": "verified",
   "proofContract": "one logical checkout persists one payment",
   "candidate": {
-    "path": "C:\\Users\\Hamza Imran\\Desktop\\OpenAI Build Week\\.foundry-worktrees\\RUN-PAY-17-001",
-    "baselineCommit": "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
-    "patchCommit": null,
+    "path": "C:\\Users\\Hamza Imran\\Desktop\\OpenAI Build Week\\.foundry-worktrees\\RUN-PAY-17-001-PORTS",
+    "baselineCommit": "93ef28fa1737767a4a0c3b38fa8f9a6158980bb6",
+    "patchCommit": "63417cadd2ed28ec0a0dd7832be900285119c885",
     "changedPaths": [
       "src/services/checkout-service.ts",
       "tests/browser/pay-17.spec.ts"
@@ -43,7 +43,7 @@
     }
   ],
   "limitations": [
-    "The verified repair remains an uncommitted candidate diff. No merge, deployment, or vault write was performed.",
+    "The verified repair is committed only in a disposable candidate worktree. No merge or deployment authority exists.",
     "The proof used the documented local Chrome fallback rather than bundled Playwright Chromium."
   ],
   "nextState": "review_pending"

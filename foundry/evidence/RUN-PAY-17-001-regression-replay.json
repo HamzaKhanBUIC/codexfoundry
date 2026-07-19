@@ -4,8 +4,8 @@
   "authority": "independent_verifier",
   "status": "regression_blocked",
   "evaluationId": "EVAL-001",
-  "baseCandidateCommit": "2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b",
-  "candidatePath": "C:\\Users\\Hamza Imran\\Desktop\\OpenAI Build Week\\.foundry-worktrees\\RUN-PAY-17-001-REGRESSION-001",
+  "baseCandidateCommit": "63417cadd2ed28ec0a0dd7832be900285119c885",
+  "candidatePath": "C:\\Users\\Hamza Imran\\Desktop\\OpenAI Build Week\\.foundry-worktrees\\RUN-PAY-17-001-PORTS-REGRESSION",
   "deliberateChange": {
     "changedPaths": ["src/services/checkout-service.ts"],
     "description": "Restored the attempt-specific idempotency-key mutation only in the disposable regression candidate.",

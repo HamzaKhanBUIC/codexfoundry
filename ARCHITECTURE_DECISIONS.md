@@ -533,3 +533,33 @@ trade-offs are recorded here.
 - **Alternatives considered:** Parsing raw artifacts directly in React components; adding a backend API for specific node/edge queries.
 - **Why rejected:** Direct artifact parsing in UI violates trust/authority boundaries; adding an API undermines the static, offline-capable projection model.
 - **Consequences:** The projection contract remains backward-compatible (`schemaVersion: "1.0"`). The same single projection is available through the virtual-module fallback and the fixed local read API; neither delivery path grants dashboard write authority. The core fails closed if a declared proof node or edge lacks a matching inspector record.
+
+## ADR-030 — Bind the candidate worktree to the approved plan's exact path scope
+
+- **Status:** Accepted
+- **Milestone:** Phase 1 engineering QA
+- **Decision:** Require an approved stored plan before creating a candidate worktree and expose only that plan's affected paths to the Codex implementation prompt.
+- **Why:** The wider PAY-17 policy defines the maximum permitted surface; it must not become execution authority for paths a human did not approve in this run.
+- **Alternatives considered:** Continue passing all policy paths to the worktree; rely solely on implementation-report validation after edits.
+- **Why rejected:** A broader prompt boundary allows an agent to modify a policy-allowed but plan-unapproved path, while post-hoc self-report validation can be incomplete or dishonest.
+- **Consequences:** Worktree creation now fails closed for unapproved or out-of-policy plans. The implementation agent receives the exact reviewed path subset, while existing command allowlist checks remain unchanged.
+
+## ADR-031 — Fail closed when evidence cannot prove the displayed PAY-17 chain
+
+- **Status:** Accepted
+- **Milestone:** Phase 1 engineering QA
+- **Decision:** Validate artifact authority, run linkage, command outcomes, approval linkage, replay linkage, candidate path scope, and Memory Pack bounds before producing the dashboard/API projection.
+- **Why:** A read-only projection is trustworthy only when malformed, contradictory, or unsuccessful evidence cannot still appear as a verified repair.
+- **Alternatives considered:** Trust a verifier artifact's `status` field alone; validate only artifact presence; let the dashboard decide which inconsistencies matter.
+- **Why rejected:** Status-only and presence-only checks can display a false proof; UI-side validation duplicates evidence interpretation and weakens the core authority boundary.
+- **Consequences:** The local API returns `evidence_unavailable` and the dashboard build fails when the PAY-17 evidence chain is inconsistent. This adds no action authority and preserves the verifier as the sole source of proof status.
+
+## ADR-032 — Isolate every browser-proof process with its own port pair
+
+- **Status:** Accepted
+- **Milestone:** Phase 1 engineering QA
+- **Decision:** Derive API and Vite ports from the browser-proof process identity, pass them through the Playwright runner, API server, Vite proxy, and reset client, and rebaseline PAY-17 on the resulting immutable fixture commit.
+- **Why:** Concurrent proof runs previously contended for ports 3001 and 5173, allowing one process to make another candidate browser proof fail before it reached the product behavior.
+- **Alternatives considered:** Serialize every browser proof; retain shared ports and rely on browser-session IDs; introduce a hosted test coordinator.
+- **Why rejected:** Serialization hides rather than fixes process interference; session IDs isolate application data but not listening sockets; a coordinator expands the local MVP without developer value.
+- **Consequences:** Parallel baseline and candidate browser proofs now use independent local servers while retaining their deterministic session-level data isolation. The port-only fixture change created baseline `93ef28f`; the approved repair was independently revalidated as candidate `63417ca`, and the approved vault revision additionally refreshed `ARCH-001` for baseline Memory Pack freshness.

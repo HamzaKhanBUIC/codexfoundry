@@ -20,7 +20,7 @@ describe("Foundry read API", () => {
   it("returns only the fixed PAY-17 evidence projection", async () => {
     const response = await request("/api/runs/RUN-PAY-17-001");
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toMatchObject({ taskId: "PAY-17", approvedCommit: "2a5d01f" });
+    await expect(response.json()).resolves.toMatchObject({ taskId: "PAY-17", approvedCommit: "63417ca" });
   });
 
   it("rejects unknown paths and all write methods", async () => {

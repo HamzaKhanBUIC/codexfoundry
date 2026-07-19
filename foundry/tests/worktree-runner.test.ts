@@ -3,7 +3,7 @@ import { access, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { PlanProposal, RepositoryMap } from "../src/models.js";
+import type { RepositoryMap, StoredPlan } from "../src/models.js";
 import { assertPlanCommandAllowed, WorktreeRunner } from "../src/worktree-runner.js";
 
 const temporaryDirectories: string[] = [];
@@ -38,7 +38,7 @@ async function fixture(): Promise<RepositoryMap> {
   };
 }
 
-function plan(): PlanProposal {
+function plan(overrides: Partial<StoredPlan> = {}): StoredPlan {
   return {
     id: "PLAN-PAY-17-001", runId: "RUN-PAY-17-001", memoryPackId: "PACK-PAY-17",
     summary: "Fix retry identity.", rootCauseHypothesis: "Hypothesis.",
@@ -46,6 +46,10 @@ function plan(): PlanProposal {
     allowedCommands: ["npm run build", "npm run test:pay-17"],
     proofContract: [{ requirementId: "PAY-17", assertion: "one logical checkout persists one payment", commands: ["npm run test:pay-17"] }],
     risks: ["Baseline is intentionally defective."],
+    status: "approved",
+    createdAt: "2026-07-18T00:00:00.000Z",
+    approvedAt: "2026-07-18T00:01:00.000Z",
+    ...overrides,
   };
 }
 
@@ -58,6 +62,7 @@ describe("disposable WorktreeRunner", () => {
       expect(path.basename(candidate.path)).toBe("RUN-PAY-17-001");
       expect(path.basename(path.dirname(candidate.path))).toBe(".foundry-worktrees");
       expect(git(candidate.path, ["rev-parse", "HEAD"])).toBe(repository.commit);
+      expect(candidate.allowedPaths).toEqual(["src/services/checkout-service.ts"]);
       expect(runner.inspect(candidate)).toEqual({ status: "", diff: "" });
     } finally {
       runner.dispose(candidate);
@@ -73,6 +78,14 @@ describe("disposable WorktreeRunner", () => {
     expect(() => assertPlanCommandAllowed("npm run test:pay-17", approvedPlan, repository)).not.toThrow();
     expect(() => assertPlanCommandAllowed("npm run test:pay-17; rm -rf /", approvedPlan, repository)).toThrow("not allowed");
     expect(() => assertPlanCommandAllowed("npm run test:browser", approvedPlan, repository)).toThrow("not allowed");
+  });
+
+  it("refuses a plan that has not passed human approval", async () => {
+    const repository = await fixture();
+    const runner = new WorktreeRunner(repository);
+
+    await expect(runner.create("RUN-PAY-17-001", plan({ status: "proposed", approvedAt: undefined })))
+      .rejects.toThrow("human-approved");
   });
 
   it("refuses to dispose a path outside the Foundry-owned directory", async () => {

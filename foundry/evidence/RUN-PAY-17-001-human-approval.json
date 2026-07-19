@@ -2,8 +2,8 @@
   "runId": "RUN-PAY-17-001",
   "authority": "human_reviewer",
   "decision": "approved",
-  "approvedCandidateCommit": "2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b",
-  "parentBaselineCommit": "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+  "approvedCandidateCommit": "63417cadd2ed28ec0a0dd7832be900285119c885",
+  "parentBaselineCommit": "93ef28fa1737767a4a0c3b38fa8f9a6158980bb6",
   "reviewArtifact": "foundry/reviews/RUN-PAY-17-001.md",
   "verifierArtifact": "foundry/evidence/RUN-PAY-17-001-verifier.json",
   "changedPaths": [

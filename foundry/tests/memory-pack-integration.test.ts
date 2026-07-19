@@ -39,7 +39,7 @@ function seededIssue(body = "Customer is charged twice after a timeout acknowled
 function repositoryMap(): RepositoryMap {
   return {
     rootPath: "/fixture/demo-store",
-    commit: "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+    commit: "93ef28fa1737767a4a0c3b38fa8f9a6158980bb6",
     services: [
       { id: "checkout-service", sourcePath: "src/services/checkout-service.ts" },
       { id: "payment-gateway", sourcePath: "src/services/payment-gateway.ts" },
@@ -75,7 +75,7 @@ describe("PAY-17 Memory Pack integration", () => {
       expect(stored).toMatchObject({
         id: "PACK-PAY-17",
         taskId: "PAY-17",
-        repositoryCommit: "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+        repositoryCommit: "93ef28fa1737767a4a0c3b38fa8f9a6158980bb6",
         estimatedTokens: expect.any(Number),
         payloadSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
       });

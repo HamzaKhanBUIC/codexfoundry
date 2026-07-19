@@ -18,10 +18,10 @@ evidence:
     reference: demo-store/tests/browser/pay-17.spec.ts
     verified: true
   - kind: commit
-    reference: 2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b
+    reference: 63417cadd2ed28ec0a0dd7832be900285119c885
     verified: true
-verified_commit: 2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b
-verified_at: 2026-07-19T00:07:00+05:00
+verified_commit: 63417cadd2ed28ec0a0dd7832be900285119c885
+verified_at: 2026-07-19T14:30:00+05:00
 confidence: verified
 staleness: fresh
 ---
@@ -37,7 +37,7 @@ the payment gateway.
 
 An acknowledgement timeout can occur after the gateway captures funds. Reusing
 the key lets the gateway return the existing capture instead of creating a
-second one. Candidate `2a5d01f` implements this decision.
+second one. Candidate `63417ca` implements this decision.
 
 ## Alternatives considered
 

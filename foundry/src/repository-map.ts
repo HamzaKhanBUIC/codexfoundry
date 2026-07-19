@@ -3,7 +3,7 @@ import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { RepositoryMap } from "./models.js";
 
-export const FROZEN_DEMO_STORE_COMMIT = "1169daf";
+export const FROZEN_DEMO_STORE_COMMIT = "93ef28f";
 
 const requiredPaths = {
   checkoutService: "src/services/checkout-service.ts",

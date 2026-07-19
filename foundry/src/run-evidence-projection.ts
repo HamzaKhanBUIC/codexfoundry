@@ -8,7 +8,9 @@ interface CommandResult {
 }
 
 interface VerifierArtifact {
+  runId: string;
   taskId: string;
+  authority: "independent_verifier";
   status: string;
   proofContract: string;
   candidate: { baselineCommit: string; changedPaths: string[]; diffInspection: string };
@@ -38,6 +40,10 @@ export interface FoundryRunProjection {
   nodeInspectors?: Record<string, NodeInspector>;
   edgeInspectors?: Record<string, EdgeInspector>;
 }
+
+const proofAssertion = "one logical checkout persists one payment";
+const requiredCandidateCommands = ["npm run build", "npm run test:health", "npm run test:pay-17", "npm run test:browser"] as const;
+const permittedChangedPaths = new Set(["src/services/checkout-service.ts", "tests/browser/pay-17.spec.ts"]);
 
 export interface ProofNode { id: string; label: string; kind: string; status: "verified" | "approved" | "recorded" | "blocked"; }
 export interface ProofEdge { from: string; to: string; label: string; }
@@ -108,27 +114,32 @@ function requiredCommand(commands: CommandResult[], command: string): CommandRes
  */
 export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunProjection {
   const verifier = artifact<VerifierArtifact>(evidenceDirectory, "RUN-PAY-17-001-verifier.json");
-  const approval = artifact<{ approvedCandidateCommit: string; limits: string[] }>(evidenceDirectory, "RUN-PAY-17-001-human-approval.json");
-  const vaultWrite = artifact<{ writtenTargets: string[]; approval: string; status: string }>(evidenceDirectory, "RUN-PAY-17-001-vault-write.json");
+  const approval = artifact<{ runId: string; authority: string; decision: string; approvedCandidateCommit: string; parentBaselineCommit: string; limits: string[] }>(evidenceDirectory, "RUN-PAY-17-001-human-approval.json");
+  const vaultWrite = artifact<{ runId: string; authority: string; writtenTargets: string[]; approval: string; status: string; approvedCandidateCommit: string }>(evidenceDirectory, "RUN-PAY-17-001-vault-write.json");
   const replay = artifact<{
+    parentRunId: string;
+    authority: string;
     status: string;
     evaluationId: string;
+    baseCandidateCommit: string;
     afterMutation: CommandResult;
   }>(evidenceDirectory, "RUN-PAY-17-001-regression-replay.json");
   const implementation = artifact<{
-    candidate: { diffStat: string };
+    runId: string;
+    taskId: string;
+    status: string;
+    verificationAuthority: string;
+    candidate: { baselineCommit: string; changedPaths: string[]; diffStat: string };
     commandLogs: CommandResult[];
     implementerReport: { changeSummary: string; confidence: string };
   }>(evidenceDirectory, "RUN-PAY-17-001-implementation.json");
-  const memoryPack = artifact<{ repositoryCommit: string; estimatedTokens: number; tokenBudget: number; confidenceScore: number; naiveComparisonReason: string; sources: { id: string; type: string; confidence: number; freshness: string; reason: string; verification: string; evidenceReferences: string[] }[]; omittedSources: { id: string; type: string; confidence: number; freshness: string; reason: string }[] }>(evidenceDirectory, "RUN-PAY-17-001-memory-pack.json");
+  const memoryPack = artifact<{ runId: string; repositoryCommit: string; estimatedTokens: number; tokenBudget: number; confidenceScore: number; naiveComparisonReason: string; sources: { id: string; type: string; confidence: number; freshness: string; reason: string; verification: string; evidenceReferences: string[] }[]; omittedSources: { id: string; type: string; confidence: number; freshness: string; reason: string }[] }>(evidenceDirectory, "RUN-PAY-17-001-memory-pack.json");
 
+  assertEvidenceContract(verifier, approval, vaultWrite, replay, implementation, memoryPack);
   const candidatePay17 = requiredCommand(verifier.candidateEvidence, "npm run test:pay-17");
   const browser = requiredCommand(verifier.candidateEvidence, "npm run test:browser");
-  if (!approval.approvedCandidateCommit || !Array.isArray(approval.limits) || !Array.isArray(vaultWrite.writtenTargets) || vaultWrite.status !== "completed") {
+  if (!Array.isArray(approval.limits) || !Array.isArray(vaultWrite.writtenTargets)) {
     throw new Error("Required approval or vault-write evidence is malformed.");
-  }
-  if (memoryPack.repositoryCommit !== approval.approvedCandidateCommit) {
-    throw new Error("Displayed reusable memory must be pinned to the approved repair commit.");
   }
 
   const projection: FoundryRunProjection = {
@@ -222,4 +233,52 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
 
   assertInspectorCoverage(projection);
   return projection;
+}
+
+function assertCommandExit(result: CommandResult, expectedExitCode: number, context: string): void {
+  if (result.exitCode !== expectedExitCode) {
+    throw new Error(`${context} must exit ${expectedExitCode}; received ${result.exitCode}.`);
+  }
+}
+
+function assertEvidenceContract(
+  verifier: VerifierArtifact,
+  approval: { runId: string; authority: string; decision: string; approvedCandidateCommit: string; parentBaselineCommit: string; limits: string[] },
+  vaultWrite: { runId: string; authority: string; approval: string; status: string; approvedCandidateCommit: string; writtenTargets: string[] },
+  replay: { parentRunId: string; authority: string; status: string; baseCandidateCommit: string; afterMutation: CommandResult },
+  implementation: { runId: string; taskId: string; status: string; verificationAuthority: string; candidate: { baselineCommit: string; changedPaths: string[] } },
+  memoryPack: { runId: string; repositoryCommit: string; estimatedTokens: number; tokenBudget: number; confidenceScore: number },
+): void {
+  if (verifier.runId !== "RUN-PAY-17-001" || verifier.taskId !== "PAY-17" || verifier.authority !== "independent_verifier" || verifier.status !== "verified" || verifier.proofContract !== proofAssertion) {
+    throw new Error("Verifier artifact does not satisfy the PAY-17 authority or proof contract.");
+  }
+  if (implementation.runId !== verifier.runId || implementation.taskId !== verifier.taskId || implementation.status !== "implementation_complete_unverified" || implementation.verificationAuthority !== "deferred_to_independent_verifier") {
+    throw new Error("Implementer artifact must remain unverified and match the verifier run.");
+  }
+  if (implementation.candidate.baselineCommit !== verifier.candidate.baselineCommit || implementation.candidate.changedPaths.join("\n") !== verifier.candidate.changedPaths.join("\n")) {
+    throw new Error("Implementer and verifier candidate records disagree.");
+  }
+  if (verifier.candidate.changedPaths.length === 0 || verifier.candidate.changedPaths.some((candidate) => !permittedChangedPaths.has(candidate))) {
+    throw new Error("Verifier artifact contains a candidate path outside the approved PAY-17 proof scope.");
+  }
+  if (verifier.baselineEvidence.command !== "npm run test:pay-17") {
+    throw new Error("Verifier baseline evidence must execute the unchanged PAY-17 proof.");
+  }
+  assertCommandExit(verifier.baselineEvidence, 1, "Verifier baseline PAY-17 evidence");
+  for (const command of requiredCandidateCommands) {
+    assertCommandExit(requiredCommand(verifier.candidateEvidence, command), 0, `Verifier candidate evidence '${command}'`);
+  }
+  if (approval.runId !== verifier.runId || approval.authority !== "human_reviewer" || approval.decision !== "approved" || !approval.approvedCandidateCommit || approval.parentBaselineCommit !== verifier.candidate.baselineCommit) {
+    throw new Error("Patch approval evidence is not a valid human decision for this verifier result.");
+  }
+  if (vaultWrite.runId !== verifier.runId || vaultWrite.authority !== "human_reviewer" || vaultWrite.approval !== "APPROVE VAULT WRITE" || vaultWrite.status !== "completed" || vaultWrite.approvedCandidateCommit !== approval.approvedCandidateCommit || vaultWrite.writtenTargets.length === 0) {
+    throw new Error("Vault-write evidence is not a valid separate human-approved result.");
+  }
+  if (replay.parentRunId !== verifier.runId || replay.authority !== "independent_verifier" || replay.status !== "regression_blocked" || replay.baseCandidateCommit !== approval.approvedCandidateCommit || replay.afterMutation.command !== "npm run test:pay-17") {
+    throw new Error("Regression replay evidence is not linked to the approved PAY-17 candidate.");
+  }
+  assertCommandExit(replay.afterMutation, 1, "Regression replay evidence");
+  if (memoryPack.runId !== verifier.runId || memoryPack.repositoryCommit !== approval.approvedCandidateCommit || memoryPack.estimatedTokens <= 0 || memoryPack.tokenBudget <= 0 || memoryPack.estimatedTokens > memoryPack.tokenBudget || memoryPack.confidenceScore < 0 || memoryPack.confidenceScore > 1) {
+    throw new Error("Post-repair Memory Pack metadata is not trustworthy for this approved candidate.");
+  }
 }

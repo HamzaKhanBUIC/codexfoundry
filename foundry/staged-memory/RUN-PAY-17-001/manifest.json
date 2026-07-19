@@ -1,9 +1,10 @@
 {
   "runId": "RUN-PAY-17-001",
   "status": "staged_pending_human_vault_approval",
-  "approvedCandidateCommit": "2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b",
-  "baselineCommit": "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+  "approvedCandidateCommit": "63417cadd2ed28ec0a0dd7832be900285119c885",
+  "baselineCommit": "93ef28fa1737767a4a0c3b38fa8f9a6158980bb6",
   "targets": [
+    "vault/architecture/ARCH-001-checkout-flow.md",
     "vault/incidents/INC-001-pay-17-duplicate-charge.md",
     "vault/adrs/ADR-001-payment-retry-idempotency.md",
     "vault/proofs/PROOF-001-pay-17-single-payment.md",

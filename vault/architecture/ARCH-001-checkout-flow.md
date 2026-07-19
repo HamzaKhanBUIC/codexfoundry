@@ -10,8 +10,8 @@ links: [ADR-001, SVC-001, SVC-002, PROOF-001]
 evidence:
   - demo-store/src/services/checkout-service.ts
   - demo-store/tests/payment-service.pay-17.test.ts
-verified_commit: 1169daf
-verified_at: 2026-07-18T00:00:00Z
+verified_commit: 93ef28fa1737767a4a0c3b38fa8f9a6158980bb6
+verified_at: 2026-07-19T14:30:00+05:00
 confidence: verified
 staleness: fresh
 ---

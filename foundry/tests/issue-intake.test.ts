@@ -27,7 +27,7 @@ function seededIssue(overrides: Partial<GitHubStyleIssue> = {}): GitHubStyleIssu
 function repositoryMap(overrides: Partial<RepositoryMap> = {}): RepositoryMap {
   return {
     rootPath: "/fixture/demo-store",
-    commit: "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+    commit: "93ef28fa1737767a4a0c3b38fa8f9a6158980bb6",
     services: [
       { id: "checkout-service", sourcePath: "src/services/checkout-service.ts" },
       { id: "payment-gateway", sourcePath: "src/services/payment-gateway.ts" },
@@ -54,7 +54,7 @@ describe("PAY-17 issue intake", () => {
     expect(result.run).toMatchObject({
       id: "RUN-PAY-17-001",
       status: "intake",
-      repositoryCommit: "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+      repositoryCommit: "93ef28fa1737767a4a0c3b38fa8f9a6158980bb6",
     });
     expect(result.task).toEqual({
       taskId: "PAY-17",
@@ -63,7 +63,7 @@ describe("PAY-17 issue intake", () => {
       riskLevel: "high",
       services: ["checkout-service", "payment-gateway"],
       paths: ["src/services/checkout-service.ts"],
-      repositoryCommit: "1169dafdc3d1f18fed2adca11ce900a15a67cfd3",
+      repositoryCommit: "93ef28fa1737767a4a0c3b38fa8f9a6158980bb6",
     });
     database.close();
   });

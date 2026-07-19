@@ -2,7 +2,7 @@
 
 - **Run:** `RUN-PAY-17-001`
 - **State:** `review_pending`
-- **Candidate:** `.foundry-worktrees/RUN-PAY-17-001` (dirty, detached at `1169daf`)
+- **Candidate:** `.foundry-worktrees/RUN-PAY-17-001-PORTS` (verified, detached at `93ef28f`)
 - **Scope:** two policy-approved files; no merge, deployment, or vault write.
 
 ## Requested decision
@@ -64,6 +64,6 @@ diff --git a/tests/browser/pay-17.spec.ts b/tests/browser/pay-17.spec.ts
 ## Review boundaries and limitation
 
 - The PAY-17 unit proof was not modified.
-- The candidate remains uncommitted by design.
+- The candidate commit remains isolated from the frozen baseline and has no merge authority.
 - The browser proof used the documented local Chrome fallback.
 - The frozen demo repository remains unchanged.

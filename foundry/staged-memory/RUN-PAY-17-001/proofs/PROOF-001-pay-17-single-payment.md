@@ -2,7 +2,7 @@
 id: PROOF-001
 type: proof
 title: One logical checkout must produce one payment capture
-summary: The original PAY-17 assertion fails at baseline and passes in approved candidate 2a5d01f without changing the unit proof.
+summary: The original PAY-17 assertion fails at baseline and passes in approved candidate 63417ca without changing the unit proof.
 services: [checkout-service, payment-gateway]
 requirements: [PAY-17]
 tags: [proof, test, browser, idempotency]
@@ -18,10 +18,10 @@ evidence:
     reference: foundry/evidence/RUN-PAY-17-001-verifier.json
     verified: true
   - kind: commit
-    reference: 2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b
+    reference: 63417cadd2ed28ec0a0dd7832be900285119c885
     verified: true
-verified_commit: 2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b
-verified_at: 2026-07-19T00:07:00+05:00
+verified_commit: 63417cadd2ed28ec0a0dd7832be900285119c885
+verified_at: 2026-07-19T14:30:00+05:00
 confidence: verified
 staleness: fresh
 ---
@@ -35,9 +35,9 @@ checkout persists exactly one payment for the created order.
 
 ## Before and after evidence
 
-Frozen baseline `1169daf` failed `npm run test:pay-17`: expected one payment,
+Frozen baseline `93ef28f` failed `npm run test:pay-17`: expected one payment,
 received two. The independent verifier reran the unchanged unit proof against
-approved candidate `2a5d01f`, where it passed. The independent browser proof
+approved candidate `63417ca`, where it passed. The independent browser proof
 also passed and visibly reported one payment after retry.
 
 ## Command and artifacts

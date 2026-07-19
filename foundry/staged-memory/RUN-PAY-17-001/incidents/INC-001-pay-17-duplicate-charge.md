@@ -15,13 +15,13 @@ evidence:
     reference: demo-store/tests/browser/pay-17.spec.ts
     verified: true
   - kind: commit
-    reference: 2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b
+    reference: 63417cadd2ed28ec0a0dd7832be900285119c885
     verified: true
   - kind: other
     reference: foundry/evidence/RUN-PAY-17-001-verifier.json
     verified: true
-verified_commit: 2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b
-verified_at: 2026-07-19T00:07:00+05:00
+verified_commit: 63417cadd2ed28ec0a0dd7832be900285119c885
+verified_at: 2026-07-19T14:30:00+05:00
 confidence: verified
 staleness: fresh
 ---
@@ -35,14 +35,14 @@ creating a customer-trust and payment-reconciliation risk.
 
 ## Deterministic reproduction
 
-At frozen baseline `1169daf`, `npm run test:pay-17` failed exactly as expected:
+At frozen baseline `93ef28f`, `npm run test:pay-17` failed exactly as expected:
 the proof asserted one payment and received two. The fixture captured the first
 payment, simulated the acknowledgement timeout, and retried with a changed key.
 
 ## Root cause and resolution
 
 `CheckoutService` derived a retry-specific key instead of retaining the
-request's logical checkout key. Approved candidate `2a5d01f` passes the original
+request's logical checkout key. Approved candidate `63417ca` passes the original
 unit proof and repaired browser proof by sending `request.idempotencyKey` on
 every retry. See [[ADR-001]] and [[PROOF-001]].
 

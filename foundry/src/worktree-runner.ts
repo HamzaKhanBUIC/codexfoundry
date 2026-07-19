@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { access, mkdir, realpath } from "node:fs/promises";
 import path from "node:path";
-import type { PlanProposal, RepositoryMap } from "./models.js";
+import type { RepositoryMap, StoredPlan } from "./models.js";
 
 const worktreeDirectoryName = ".foundry-worktrees";
 
@@ -23,11 +23,22 @@ function validateRunId(runId: string): void {
   }
 }
 
-function allowedPaths(repository: RepositoryMap): string[] {
-  return [repository.services[0].sourcePath, repository.pay17TestPath, repository.browserTestPath];
+function assertApprovedPlanWithinPolicy(plan: StoredPlan, repository: RepositoryMap): void {
+  if (plan.status !== "approved") {
+    throw new Error("Worktree creation requires a human-approved plan.");
+  }
+
+  const policyPaths = new Set([repository.services[0].sourcePath, repository.pay17TestPath, repository.browserTestPath]);
+  const policyCommands = new Set(Object.values(repository.commands));
+  if (plan.affectedPaths.length === 0 || plan.affectedPaths.some((candidate) => !policyPaths.has(candidate))) {
+    throw new Error("Worktree plan contains a path outside the PAY-17 policy boundary.");
+  }
+  if (plan.allowedCommands.length === 0 || plan.allowedCommands.some((candidate) => !policyCommands.has(candidate))) {
+    throw new Error("Worktree plan contains a command outside the PAY-17 policy boundary.");
+  }
 }
 
-export function assertPlanCommandAllowed(command: string, plan: PlanProposal, repository: RepositoryMap): void {
+export function assertPlanCommandAllowed(command: string, plan: StoredPlan, repository: RepositoryMap): void {
   const policyCommands = new Set(Object.values(repository.commands));
   if (!plan.allowedCommands.includes(command) || !policyCommands.has(command)) {
     throw new Error(`Command '${command}' is not allowed by the approved PAY-17 plan and policy.`);
@@ -44,9 +55,10 @@ export class WorktreeRunner {
 
   constructor(private readonly repository: RepositoryMap) {}
 
-  async create(runId: string, plan: PlanProposal): Promise<ImplementationWorktree> {
+  async create(runId: string, plan: StoredPlan): Promise<ImplementationWorktree> {
     validateRunId(runId);
     if (plan.runId !== runId) throw new Error("Approved plan run id does not match the requested worktree.");
+    assertApprovedPlanWithinPolicy(plan, this.repository);
     const root = await realpath(this.repository.rootPath);
     const parent = path.join(path.dirname(root), worktreeDirectoryName);
     const target = path.join(parent, runId);
@@ -63,7 +75,7 @@ export class WorktreeRunner {
       runId,
       path: target,
       repositoryCommit: this.repository.commit,
-      allowedPaths: allowedPaths(this.repository),
+      allowedPaths: [...plan.affectedPaths],
       allowedCommands: [...plan.allowedCommands],
     };
   }
