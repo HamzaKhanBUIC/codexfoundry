@@ -11,7 +11,7 @@ interface VerifierArtifact {
   taskId: string;
   status: string;
   proofContract: string;
-  candidate: { changedPaths: string[]; diffInspection: string };
+  candidate: { baselineCommit: string; changedPaths: string[]; diffInspection: string };
   baselineEvidence: CommandResult;
   candidateEvidence: CommandResult[];
   limitations: string[];
@@ -32,7 +32,7 @@ export interface FoundryRunProjection {
   commandEvidence: readonly (readonly [string, string, string, string])[];
   proofGraph: { nodes: readonly ProofNode[]; edges: readonly ProofEdge[] };
   review: ReviewProjection;
-  memory: MemoryTransparency & { estimatedTokens: number; tokenBudget: number; confidenceScore: number; naiveComparisonReason: string; };
+  memory: MemoryTransparency & { estimatedTokens: number; tokenBudget: number; confidenceScore: number; naiveComparisonReason: string; lifecycleLabel: string; lifecycleExplanation: string; repositoryCommit: string; baselineCommit: string; };
   evidence: readonly EvidenceItem[];
   metrics: readonly MeasuredMetric[];
   nodeInspectors?: Record<string, NodeInspector>;
@@ -42,7 +42,7 @@ export interface FoundryRunProjection {
 export interface ProofNode { id: string; label: string; kind: string; status: "verified" | "approved" | "recorded" | "blocked"; }
 export interface ProofEdge { from: string; to: string; label: string; }
 export interface EvidenceItem { id: string; kind: "console" | "diff" | "test" | "browser" | "verification"; title: string; command?: string; exitCode?: number; content: string; authority: "implementer" | "independent_verifier" | "human_reviewer"; }
-export interface ReviewProjection { changedPaths: string[]; diffSummary: string; proofContract: string; limitations: string[]; vaultTargets: string[]; vaultDecision: string; }
+export interface ReviewProjection { changedPaths: string[]; diffSummary: string; proofContract: string; patchApprovalLimits: string[]; vaultTargets: string[]; vaultDecision: string; vaultStatus: string; }
 export interface MemoryTransparency { included: readonly MemoryNote[]; omitted: readonly OmittedMemoryNote[]; }
 export interface MemoryNote { id: string; type: string; confidence: string; freshness: string; reasonSelected: string; verification: string; evidenceReferences: string[]; }
 export interface OmittedMemoryNote { id: string; type: string; confidence: string; freshness: string; reason: string; }
@@ -108,8 +108,8 @@ function requiredCommand(commands: CommandResult[], command: string): CommandRes
  */
 export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunProjection {
   const verifier = artifact<VerifierArtifact>(evidenceDirectory, "RUN-PAY-17-001-verifier.json");
-  const approval = artifact<{ approvedCandidateCommit: string }>(evidenceDirectory, "RUN-PAY-17-001-human-approval.json");
-  const vaultWrite = artifact<{ writtenTargets: string[]; approval: string }>(evidenceDirectory, "RUN-PAY-17-001-vault-write.json");
+  const approval = artifact<{ approvedCandidateCommit: string; limits: string[] }>(evidenceDirectory, "RUN-PAY-17-001-human-approval.json");
+  const vaultWrite = artifact<{ writtenTargets: string[]; approval: string; status: string }>(evidenceDirectory, "RUN-PAY-17-001-vault-write.json");
   const replay = artifact<{
     status: string;
     evaluationId: string;
@@ -120,12 +120,15 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
     commandLogs: CommandResult[];
     implementerReport: { changeSummary: string; confidence: string };
   }>(evidenceDirectory, "RUN-PAY-17-001-implementation.json");
-  const memoryPack = artifact<{ estimatedTokens: number; tokenBudget: number; confidenceScore: number; naiveComparisonReason: string; sources: { id: string; type: string; confidence: number; freshness: string; reason: string; verification: string; evidenceReferences: string[] }[]; omittedSources: { id: string; type: string; confidence: number; freshness: string; reason: string }[] }>(evidenceDirectory, "RUN-PAY-17-001-memory-pack.json");
+  const memoryPack = artifact<{ repositoryCommit: string; estimatedTokens: number; tokenBudget: number; confidenceScore: number; naiveComparisonReason: string; sources: { id: string; type: string; confidence: number; freshness: string; reason: string; verification: string; evidenceReferences: string[] }[]; omittedSources: { id: string; type: string; confidence: number; freshness: string; reason: string }[] }>(evidenceDirectory, "RUN-PAY-17-001-memory-pack.json");
 
   const candidatePay17 = requiredCommand(verifier.candidateEvidence, "npm run test:pay-17");
   const browser = requiredCommand(verifier.candidateEvidence, "npm run test:browser");
-  if (!approval.approvedCandidateCommit || !Array.isArray(vaultWrite.writtenTargets)) {
+  if (!approval.approvedCandidateCommit || !Array.isArray(approval.limits) || !Array.isArray(vaultWrite.writtenTargets) || vaultWrite.status !== "completed") {
     throw new Error("Required approval or vault-write evidence is malformed.");
+  }
+  if (memoryPack.repositoryCommit !== approval.approvedCandidateCommit) {
+    throw new Error("Displayed reusable memory must be pinned to the approved repair commit.");
   }
 
   const projection: FoundryRunProjection = {
@@ -141,7 +144,7 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
     regressionStatus: replay.status,
     timeline: [
       ["Issue intake", "PAY-17 scoped to the checkout and payment boundaries."],
-      ["Memory Pack", "Fresh, verified engineering context selected from the vault."],
+      ["Baseline planner Memory Pack", "Commit-aware pre-repair context bounded the plan; post-repair proof knowledge was excluded."],
       ["Plan approved", "Human approval limited Codex to two paths and four commands."],
       ["Candidate repair", "Codex preserved the logical idempotency key across retries."],
       ["Independent verification", "Baseline failed. Candidate unit and browser proofs passed."],
@@ -157,7 +160,7 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
     proofGraph: {
       nodes: [
         { id: "issue", label: "PAY-17 issue", kind: "Requirement", status: "recorded" },
-        { id: "memory", label: "Memory Pack", kind: "Context", status: "recorded" },
+        { id: "memory", label: "Baseline planner pack", kind: "Context", status: "recorded" },
         { id: "plan", label: "Approved plan", kind: "Human gate", status: "approved" },
         { id: "worktree", label: "Candidate worktree", kind: "Isolated change", status: "recorded" },
         { id: "verification", label: "Independent verification", kind: "Proof", status: "verified" },
@@ -176,11 +179,12 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
       changedPaths: verifier.candidate.changedPaths,
       diffSummary: `${implementation.candidate.diffStat}. ${verifier.candidate.diffInspection}`,
       proofContract: verifier.proofContract,
-      limitations: verifier.limitations,
+      patchApprovalLimits: approval.limits,
       vaultTargets: vaultWrite.writtenTargets,
       vaultDecision: vaultWrite.approval,
+      vaultStatus: vaultWrite.status,
     },
-    memory: { estimatedTokens: memoryPack.estimatedTokens, tokenBudget: memoryPack.tokenBudget, confidenceScore: memoryPack.confidenceScore, naiveComparisonReason: memoryPack.naiveComparisonReason, included: memoryPack.sources.map((source) => ({ id: source.id, type: source.type, confidence: String(source.confidence), freshness: source.freshness, reasonSelected: source.reason, verification: source.verification, evidenceReferences: source.evidenceReferences })), omitted: memoryPack.omittedSources.map((source) => ({ id: source.id, type: source.type, confidence: String(source.confidence), freshness: source.freshness, reason: source.reason })) },
+    memory: { lifecycleLabel: "Post-repair reusable engineering memory", lifecycleExplanation: `This displayed pack was compiled after repair against approved candidate ${memoryPack.repositoryCommit.slice(0, 7)}. It was not sent to the baseline planner, which was bounded by pre-repair commit ${verifier.candidate.baselineCommit.slice(0, 7)} context.`, repositoryCommit: memoryPack.repositoryCommit.slice(0, 7), baselineCommit: verifier.candidate.baselineCommit.slice(0, 7), estimatedTokens: memoryPack.estimatedTokens, tokenBudget: memoryPack.tokenBudget, confidenceScore: memoryPack.confidenceScore, naiveComparisonReason: memoryPack.naiveComparisonReason, included: memoryPack.sources.map((source) => ({ id: source.id, type: source.type, confidence: String(source.confidence), freshness: source.freshness, reasonSelected: source.reason, verification: source.verification, evidenceReferences: source.evidenceReferences })), omitted: memoryPack.omittedSources.map((source) => ({ id: source.id, type: source.type, confidence: String(source.confidence), freshness: source.freshness, reason: source.reason })) },
     evidence: [
       ...implementation.commandLogs.map((log) => ({ id: `implementer:${log.command}`, kind: "console" as const, title: `Implementer log: ${log.command}`, command: log.command, exitCode: log.exitCode, content: log.stdout, authority: "implementer" as const })),
       { id: "verifier:diff", kind: "diff", title: "Verifier diff inspection", content: verifier.candidate.diffInspection, authority: "independent_verifier" },
@@ -197,7 +201,7 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
     ],
     nodeInspectors: {
       issue: { nodeId: "issue", artifactType: "Requirement", evidenceSource: "Task intake (PAY-17)", verificationStatus: "recorded", confidence: "n/a", freshness: "n/a", causalExplanation: "Defines the defect that must be repaired.", limitations: ["Untrusted input; does not grant permissions or policy."], relatedEvidence: [] },
-      memory: { nodeId: "memory", artifactType: "Context", evidenceSource: "RUN-PAY-17-001-memory-pack.json", verificationStatus: "recorded", confidence: String(memoryPack.confidenceScore), freshness: memoryPack.sources[0]?.freshness ?? "fresh", causalExplanation: "Provides fresh, verified context to Codex while excluding stale future-repair knowledge.", limitations: ["Derived from the vault, but grants no authority to write back to the vault."], relatedEvidence: [] },
+      memory: { nodeId: "memory", artifactType: "Context", evidenceSource: "Baseline planner Memory Pack policy", verificationStatus: "recorded", confidence: "n/a", freshness: "n/a", causalExplanation: "Provides pre-repair context to bound the plan. It does not include PROOF-001, which was verified only after the repair.", limitations: ["The separately displayed post-repair reusable memory was not sent to the baseline planner."], relatedEvidence: [] },
       plan: { nodeId: "plan", artifactType: "Human gate", evidenceSource: "Human plan approval", verificationStatus: "approved", confidence: "n/a", freshness: "n/a", causalExplanation: "Restricts Codex implementation to a specific bounded diff.", limitations: ["Only authorizes a disposable worktree; no direct repository merge."], relatedEvidence: [] },
       worktree: { nodeId: "worktree", artifactType: "Isolated change", evidenceSource: "RUN-PAY-17-001-implementation.json", verificationStatus: "recorded", confidence: implementation.implementerReport.confidence, freshness: "n/a", causalExplanation: "Produces a candidate patch under the approved plan.", limitations: ["This is an implementer artifact, not independent proof. It is non-authoritative."], relatedEvidence: implementation.commandLogs.map(log => `implementer:${log.command}`) },
       verification: { nodeId: "verification", artifactType: "Proof", evidenceSource: "RUN-PAY-17-001-verifier.json", verificationStatus: "verified", confidence: "1", freshness: "n/a", causalExplanation: "Proves the unmodified baseline fails and the candidate patch passes.", limitations: ["Does not automatically merge the patch or write to the vault."], relatedEvidence: ["verifier:diff", "verifier:baseline", "verifier:browser", "verifier:summary"] },
