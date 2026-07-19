@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "runId": "RUN-PAY-17-001",
+  "repositoryCommit": "2a5d01f47b1ebdbe0ed97633474d2e19adf4b10b",
+  "generatedAt": "2026-07-19T00:07:00+05:00",
+  "estimatedTokens": 715,
+  "tokenBudget": 12000,
+  "confidenceScore": 1,
+  "naiveContextTokens": null,
+  "naiveComparisonReason": "No naive repository-context baseline was recorded for this historical run; Foundry does not infer a reduction percentage.",
+  "sources": [{
+    "id": "PROOF-001", "type": "proof", "confidence": 1, "freshness": "fresh",
+    "reason": "matches requirement PAY-17; matches service checkout-service, payment-gateway; shares task terms after, checkout, retry; covers requirement:pay-17, service:checkout-service, service:payment-gateway, type:proof",
+    "verification": "verified commit 2a5d01f",
+    "evidenceReferences": ["npm run test:pay-17 (baseline: exit 1; candidate: exit 0)", "npm run test:browser (candidate: exit 0)", "foundry/evidence/RUN-PAY-17-001-verifier.json"]
+  }],
+  "omittedSources": [
+    { "id": "ADR-001", "type": "adr", "confidence": 1, "freshness": "fresh", "reason": "excluded because it does not add uncovered task coverage" },
+    { "id": "ARCH-001", "type": "architecture", "confidence": 0.31, "freshness": "stale", "reason": "excluded because its verified knowledge is stale" },
+    { "id": "EVAL-001", "type": "evaluation", "confidence": 1, "freshness": "fresh", "reason": "excluded because it does not add uncovered task coverage" },
+    { "id": "INC-000", "type": "incident", "confidence": 0.25, "freshness": "stale", "reason": "excluded because its verified knowledge is stale" },
+    { "id": "INC-001", "type": "incident", "confidence": 1, "freshness": "fresh", "reason": "excluded because it does not add uncovered task coverage" },
+    { "id": "SVC-001", "type": "service", "confidence": 0.31, "freshness": "stale", "reason": "excluded because its verified knowledge is stale" },
+    { "id": "SVC-002", "type": "service", "confidence": 0.31, "freshness": "stale", "reason": "excluded because its verified knowledge is stale" }
+  ]
+}

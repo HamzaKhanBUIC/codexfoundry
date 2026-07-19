@@ -32,7 +32,7 @@ export interface FoundryRunProjection {
   commandEvidence: readonly (readonly [string, string, string, string])[];
   proofGraph: { nodes: readonly ProofNode[]; edges: readonly ProofEdge[] };
   review: ReviewProjection;
-  memory: MemoryTransparency;
+  memory: MemoryTransparency & { estimatedTokens: number; tokenBudget: number; confidenceScore: number; naiveComparisonReason: string; };
   evidence: readonly EvidenceItem[];
   metrics: readonly MeasuredMetric[];
 }
@@ -77,6 +77,7 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
     commandLogs: CommandResult[];
     implementerReport: { changeSummary: string; confidence: string };
   }>(evidenceDirectory, "RUN-PAY-17-001-implementation.json");
+  const memoryPack = artifact<{ estimatedTokens: number; tokenBudget: number; confidenceScore: number; naiveComparisonReason: string; sources: { id: string; type: string; confidence: number; freshness: string; reason: string; verification: string; evidenceReferences: string[] }[]; omittedSources: { id: string; type: string; confidence: number; freshness: string; reason: string }[] }>(evidenceDirectory, "RUN-PAY-17-001-memory-pack.json");
 
   const candidatePay17 = requiredCommand(verifier.candidateEvidence, "npm run test:pay-17");
   const browser = requiredCommand(verifier.candidateEvidence, "npm run test:browser");
@@ -136,16 +137,7 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
       vaultTargets: vaultWrite.writtenTargets,
       vaultDecision: vaultWrite.approval,
     },
-    memory: {
-      included: [
-        { id: "ADR-001", type: "ADR", confidence: "verified", freshness: "fresh on repaired commit", reasonSelected: "Direct, verified retry/idempotency decision for the repaired candidate.", verification: "verified commit 2a5d01f", evidenceReferences: ["checkout-service.ts", "PAY-17 unit proof", "browser proof"] },
-        { id: "PROOF-001", type: "Proof", confidence: "verified", freshness: "fresh on repaired commit", reasonSelected: "Provides the executable one-payment assertion required by the task.", verification: "independent verifier", evidenceReferences: ["npm run test:pay-17", "npm run test:browser"] },
-      ],
-      omitted: [
-        { id: "INC-000", type: "Incident", confidence: "low", freshness: "stale", reason: "Legacy checkout knowledge is outside the verified implementation context." },
-        { id: "ARCH-001", type: "Architecture", confidence: "verified", freshness: "baseline-only", reason: "Retained for baseline analysis; it adds no uncovered repaired-candidate proof obligation." },
-      ],
-    },
+    memory: { estimatedTokens: memoryPack.estimatedTokens, tokenBudget: memoryPack.tokenBudget, confidenceScore: memoryPack.confidenceScore, naiveComparisonReason: memoryPack.naiveComparisonReason, included: memoryPack.sources.map((source) => ({ id: source.id, type: source.type, confidence: String(source.confidence), freshness: source.freshness, reasonSelected: source.reason, verification: source.verification, evidenceReferences: source.evidenceReferences })), omitted: memoryPack.omittedSources.map((source) => ({ id: source.id, type: source.type, confidence: String(source.confidence), freshness: source.freshness, reason: source.reason })) },
     evidence: [
       ...implementation.commandLogs.map((log) => ({ id: `implementer:${log.command}`, kind: "console" as const, title: `Implementer log: ${log.command}`, command: log.command, exitCode: log.exitCode, content: log.stdout, authority: "implementer" as const })),
       { id: "verifier:diff", kind: "diff", title: "Verifier diff inspection", content: verifier.candidate.diffInspection, authority: "independent_verifier" },
@@ -158,6 +150,7 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
       { label: "Changed paths", value: String(verifier.candidate.changedPaths.length), detail: "Within the approved candidate boundary." },
       { label: "Vault revisions", value: String(vaultWrite.writtenTargets.length), detail: "Explicitly human-approved Markdown revisions." },
       { label: "Regression status", value: replay.status, detail: "Unchanged PAY-17 proof blocked the deliberate mutation." },
+      { label: "Memory Pack", value: `${memoryPack.estimatedTokens} / ${memoryPack.tokenBudget}`, detail: memoryPack.naiveComparisonReason },
     ],
   };
 }
