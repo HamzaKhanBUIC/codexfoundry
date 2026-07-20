@@ -3,11 +3,11 @@
   "private": true,
   "workspaces": [
     "memory",
-    "foundry",
-    "foundry/dashboard"
+    "foundry"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@codex-foundry/memory && npm run build --workspace=@codex-foundry/core && npm run build --workspace=@codex-foundry/dashboard",
+    "postinstall": "npm install --prefix foundry/dashboard",
+    "build": "npm run build --workspace=@codex-foundry/memory && npm run build --workspace=@codex-foundry/core && npm --prefix foundry/dashboard run build",
     "test": "npm run test --workspace=@codex-foundry/memory && npm run test --workspace=@codex-foundry/core",
     "demo": "node release/demo.mjs"
   }
