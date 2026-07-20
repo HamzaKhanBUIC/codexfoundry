@@ -1,7 +1,14 @@
 {
   "name": "codex-foundry-release",
   "private": true,
+  "workspaces": [
+    "memory",
+    "foundry",
+    "foundry/dashboard"
+  ],
   "scripts": {
+    "build": "npm run build --workspace=@codex-foundry/memory && npm run build --workspace=@codex-foundry/core && npm run build --workspace=@codex-foundry/dashboard",
+    "test": "npm run test --workspace=@codex-foundry/memory && npm run test --workspace=@codex-foundry/core",
     "demo": "node release/demo.mjs"
   }
 }

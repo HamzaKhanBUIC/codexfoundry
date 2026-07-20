@@ -39,3 +39,19 @@ From this release worktree, run `npm run demo`. The bootstrap validates and
 materializes the immutable fixture into an ignored runtime directory; it never
 edits the frozen source fixture. See the [master handoff](release/PROJECT_MASTER_HANDOFF.md)
 for the recorded validation inventory and current limitations.
+
+## Getting started
+
+From the repository root, no flags, environment variables, or manual
+subpackage installs are required:
+
+```powershell
+npm install
+npm run build
+npm test
+```
+
+The root commands run the Memory, Foundry core, and dashboard builds in
+dependency order. The root test command runs every package that currently has
+a test suite (Memory and Foundry core); the dashboard has no test script yet.
+After these checks, run `npm run demo` to start the local product.
