@@ -1,57 +1,55 @@
 # Codex Foundry Core
 
-This package is the local persistence and run-state foundation for the one
-PAY-17 Foundry workflow. It intentionally contains no HTTP API, UI, Planner,
-Codex execution, worktree management, verifier, or vault write-back.
+`foundry/` owns the local, strict TypeScript implementation of the PAY-17
+workflow policy and evidence projection. It is not a generic orchestration
+service and has no production, merge, deploy, or arbitrary-file authority.
 
-## Validate
+## Run and validate
 
 ```powershell
 cd foundry
-npm install
 npm test
 npm run build
-```
-
-## Local read API
-
-```powershell
-cd foundry
 npm run serve
 ```
 
-The API listens only on `127.0.0.1:4174`. Start it before `npm run dev` in
-`foundry/dashboard/`; Vite proxies dashboard `/api` requests to it.
+The read-only server listens on `127.0.0.1:4174`.
 
-## Current contract
+## Responsibilities
 
-`RunRepository` persists the issue metadata, frozen repository commit, current
-run state, correction count, failure reason, and append-only transition events
-in local SQLite through Node's built-in `node:sqlite` module.
+- Node 24 SQLite run state, append-only transitions, and bounded correction
+  loop.
+- PAY-17 issue intake and frozen repository-map validation.
+- Persisted, hashable baseline Memory Pack input.
+- Exact-JSON planner proposal parsing, policy validation, and human plan
+  approval before implementation.
+- Disposable candidate worktree policy and bounded Codex implementer report.
+- Recorded implementation, independent verifier, human patch approval, vault
+  approval, and regression-replay evidence.
+- One evidence projection consumed by the dashboard and local API.
 
-The single correction loop permits one return from `verifying` to
-`implementing`: the initial implementation plus one evidence-driven repair
-attempt. The state machine rejects every other invalid or terminal transition.
+## Current evidence contract
 
-## Issue intake
+`RUN-PAY-17-001` requires run-linked intake, approved-plan, implementation,
+verifier, patch-approval, vault-write, regression-replay, and post-repair
+Memory Pack artifacts. The projection verifies run linkage, authority,
+commands, candidate scope, approvals, replay consistency, Memory Pack bounds,
+and interactive inspector coverage.
 
-`compilePay17IntakeTask()` accepts only the seeded PAY-17 issue shape and the
-validated repository map. It returns a policy-owned, minimal task handoff;
-untrusted issue prose is retained only as source metadata in the run record.
-This package does not yet create a plan, invoke Codex, manage a worktree, run
-verification, expose an HTTP API, or write the vault.
+It fails closed:
 
-## Memory Pack integration
+- Missing or malformed required stage evidence: `Evidence incomplete` and API
+  `503 {"error":"evidence_incomplete"}`.
+- Contradictory same-run regression claims: `Evidence contradiction` and API
+  `503 {"error":"evidence_contradiction"}`.
 
-`compileAndPersistPay17MemoryPack()` consumes only the trusted intake task and
-the read-only vault. It persists the exact compiler-rendered Markdown, a
-SHA-256 payload hash, measured token/confidence values, and bodyless source /
-omission metadata in the same transaction that advances a run to
-`memory_compiled`. The raw vault index is never persisted or exposed.
+The fixed API exposes only:
 
-## Repository map
+- `GET /api/health`
+- `GET /api/runs/RUN-PAY-17-001`
 
-`buildRepositoryMap()` reads only the frozen checkout fixture's commit,
-required paths, and declared package commands. It emits no source bodies and
-fails closed when the fixture baseline, PAY-17 proof paths, or expected judge
-commands are missing.
+All other paths return `404`; non-GET requests return `405`.
+
+See [intake/plan evidence](../architecture/intake-plan-evidence.md),
+[projection contract](../architecture/run-evidence-projection.md), and
+[manual QA](../release/MANUAL_QA_GUIDE.md).

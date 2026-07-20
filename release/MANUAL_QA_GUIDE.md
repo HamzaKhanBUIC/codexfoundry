@@ -1,7 +1,9 @@
 # Codex Foundry — Manual QA Guide
 
 Use this guide to validate the complete deterministic PAY-17 MVP without
-editing code, the frozen fixture, evidence, or vault files.
+editing code, the frozen fixture, or vault files. Section 4 includes one
+explicitly opt-in, reversible evidence-corruption drill for demonstrating the
+fail-closed trust boundary; skip that section for a normal read-only review.
 
 ## 1. Testing environment
 
@@ -61,11 +63,14 @@ Open `http://127.0.0.1:4173`.
 3. Confirm the causal graph contains, in order: PAY-17 issue, baseline planner
    pack, approved plan, candidate worktree, independent verification, patch
    approval, vault approval, and regression replay.
-4. Click **PAY-17 issue**, **Independent verification**, and **Regression
+4. Open the recorded workflow evidence. Confirm that intake, approved plan,
+   implementation, verifier, patch approval, and vault approval each name a
+   recorded source artifact for the same run.
+5. Click **PAY-17 issue**, **Independent verification**, and **Regression
    replay**. Each inspector must show its evidence source, status, causal
    explanation, and limitations.
-5. Click a connector. It must explain why the next artifact is permitted.
-6. Use **Clear selection** or `Escape`; no action beyond inspection is
+6. Click a connector. It must explain why the next artifact is permitted.
+7. Use **Clear selection** or `Escape`; no action beyond inspection is
    available.
 
 Expected conclusion: the verifier—not Codex or the dashboard—made the proof
@@ -105,6 +110,8 @@ status authoritative.
    labelled `independent_verifier`.
 5. Confirm browser evidence honestly says its command log is authoritative and
    that no screenshot/trace was recorded.
+6. Confirm the Evidence tab includes the recorded issue intake and the
+   recorded, human-approved plan alongside later-stage evidence.
 
 ## 3. Workflow validation
 
@@ -185,7 +192,40 @@ Expected:
 - The PAY-17 proof exits `1` and reports two payments. This is success: the
   unchanged proof blocked the deliberate retry-key mutation.
 
-## 4. Failure cases
+## 4. Optional live fail-closed drill
+
+This is the only section that temporarily edits evidence. It is safe only in
+the release worktree, with the demo server already running. It never touches
+the frozen baseline or the vault. The dashboard fetches the read API on page
+load, so refresh the browser after each edit; no server restart is required.
+
+```powershell
+Set-Location -LiteralPath $Project
+$VaultEvidence = '.\foundry\evidence\RUN-PAY-17-001-vault-write.json'
+$Backup = Join-Path $env:TEMP 'RUN-PAY-17-001-vault-write.demo-backup.json'
+Copy-Item -LiteralPath $VaultEvidence -Destination $Backup -Force
+$Evidence = Get-Content -Raw -LiteralPath $VaultEvidence | ConvertFrom-Json
+$Evidence.regressionReplay.status = 'pending'
+$Evidence | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $VaultEvidence -Encoding utf8
+```
+
+Refresh `http://127.0.0.1:4173`. Expected result: the API responds to
+`GET /api/runs/RUN-PAY-17-001` with HTTP `503` and
+`{"error":"evidence_contradiction"}`; the dashboard displays **Evidence
+contradiction / Projection blocked**, rather than a guessed verified result.
+
+Restore immediately, then refresh once more:
+
+```powershell
+Copy-Item -LiteralPath $Backup -Destination $VaultEvidence -Force
+Remove-Item -LiteralPath $Backup -Force
+```
+
+Expected recovery: API and dashboard return to their normal verified state
+without restarting `npm run demo`. Stop and restore the backup before any
+other troubleshooting if the blocked state does not appear.
+
+## 5. Failure cases
 
 | Condition | Expected behavior | Meaning |
 |---|---|---|
@@ -194,7 +234,8 @@ Expected:
 | Candidate `test:pay-17` fails | Unexpected | Stop: repair or evidence is invalid. |
 | Candidate browser fails or reports `ECONNREFUSED` | Unexpected | Stop: browser-process isolation is broken. |
 | Read API `POST` returns `405` | Expected | Dashboard/API cannot mutate runs, vault, Git, or production state. |
-| Missing/malformed evidence yields API `503 evidence_unavailable` | Expected | Projection fails closed rather than displaying untrustworthy proof. |
+| Missing/malformed required evidence yields API `503 evidence_incomplete` | Expected | Projection fails closed rather than displaying an incomplete workflow as complete. |
+| Valid evidence disagrees about regression replay | API `503 evidence_contradiction`; dashboard says **Evidence contradiction / Projection blocked** | Projection refuses to choose a preferred claim. |
 
 ## 5. Acceptance checklist
 
@@ -214,7 +255,7 @@ Expected:
 - [ ] Regression candidate changes only the retry-key line.
 - [ ] Regression PAY-17 proof fails with two payments.
 - [ ] Memory tests pass (18 tests) and build succeeds.
-- [ ] Foundry tests pass (29 tests) and build succeeds.
+- [ ] Foundry tests pass (33 tests) and build succeeds.
 - [ ] Dashboard production build succeeds.
 - [ ] No dashboard console warnings or errors occur during the workflow.
 - [ ] No step grants merge, deployment, production, generic file, or automatic vault-write authority.

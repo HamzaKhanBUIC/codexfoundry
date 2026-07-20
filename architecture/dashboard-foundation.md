@@ -6,11 +6,13 @@ than a generic coding-agent chat screen.
 
 ## First-slice responsibilities
 
-- Show the scoped issue and completed run state.
+- Show the scoped issue, approved plan, and completed run state from recorded
+  evidence.
 - Show a requirement-to-decision-to-code-to-proof graph.
 - Separate verifier-owned command evidence from implementer narration.
 - Show the approved memory write and the blocked deliberate regression.
-- Keep the interface read-only while API and approval endpoints are added.
+- Keep the interface read-only; the API intentionally exposes no approval or
+  action endpoint.
 
 ## Design system
 

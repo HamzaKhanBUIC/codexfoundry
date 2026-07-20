@@ -4,12 +4,12 @@
 
 | Feature | User value | Evidence of completion |
 |---|---|---|
-| Issue intake | Starts with a real engineering request | Rendered issue and linked requirement |
+| Issue intake | Starts with a bounded engineering request | Recorded untrusted source issue plus validated task handoff |
 | Memory Pack | Shows minimal, relevant, explainable context | Included-note list with reasons and token estimate |
-| Proof contract | Defines observable success before code changes | Failing test and acceptance checklist |
+| Proof contract | Defines observable success before code changes | Recorded approved plan, failing baseline proof, and acceptance assertion |
 | Isolated implementation | Keeps changes reviewable and safe | Worktree path, diff, command log |
 | Verification loop | Demonstrates mechanical trust | Passing test/browser result and failed-before state |
-| Proof graph | Makes the work legible to a judge | Requirement → code → test → evidence links |
+| Proof graph | Makes the work legible to a judge | Evidence-derived graph, source inspectors, and fail-closed projection |
 | Vault write-back | Makes knowledge compound | Approved Markdown artifacts in Obsidian vault |
 | Regression evaluation | Proves durable prevention | Intentional bad change fails |
 
@@ -18,4 +18,4 @@
 - Obsidian plugin side panel for reviewing proposed vault writes.
 - Stale-memory badge when a note’s verified commit is no longer current.
 - GitHub pull-request creation against a demo repository.
-- Context-efficiency comparison against naïve repository loading.
+- Recorded naïve-context comparison when a real baseline exists; no inferred percentage.
