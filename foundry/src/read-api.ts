@@ -8,6 +8,12 @@ function json(response: ServerResponse, statusCode: number, body: unknown): void
   response.end(JSON.stringify(body));
 }
 
+function evidenceErrorCode(error: unknown): "evidence_contradiction" | "evidence_unavailable" {
+  return error instanceof Error && error.message.startsWith("Evidence contradiction:")
+    ? "evidence_contradiction"
+    : "evidence_unavailable";
+}
+
 /** Read-only local API. It exposes no generic file access or action endpoints. */
 export function createFoundryReadApi(evidenceDirectory: string): Server {
   return createServer((request: IncomingMessage, response: ServerResponse) => {
@@ -24,8 +30,8 @@ export function createFoundryReadApi(evidenceDirectory: string): Server {
       let run: FoundryRunProjection;
       try {
         run = loadPay17RunProjection(evidenceDirectory);
-      } catch {
-        json(response, 503, { error: "evidence_unavailable" });
+      } catch (error) {
+        json(response, 503, { error: evidenceErrorCode(error) });
         return;
       }
       json(response, 200, run);

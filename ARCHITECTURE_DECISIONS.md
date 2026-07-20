@@ -563,3 +563,13 @@ trade-offs are recorded here.
 - **Alternatives considered:** Serialize every browser proof; retain shared ports and rely on browser-session IDs; introduce a hosted test coordinator.
 - **Why rejected:** Serialization hides rather than fixes process interference; session IDs isolate application data but not listening sockets; a coordinator expands the local MVP without developer value.
 - **Consequences:** Parallel baseline and candidate browser proofs now use independent local servers while retaining their deterministic session-level data isolation. The port-only fixture change created baseline `93ef28f`; the approved repair was independently revalidated as candidate `63417ca`, and the approved vault revision additionally refreshed `ARCH-001` for baseline Memory Pack freshness.
+
+## ADR-033 — Fail closed on cross-artifact regression replay contradictions
+
+- **Status:** Accepted
+- **Milestone:** Phase 1 engineering QA
+- **Decision:** Require a typed `regressionReplay` claim in the vault-write artifact and compare every typed replay claim in same-run evidence artifacts against the independently verified replay artifact. Reject unstructured `regression replay` assertions in linked evidence JSON.
+- **Why:** The projection previously validated the replay artifact independently but did not validate stale replay language in another same-run artifact, allowing the dashboard to display a resolved outcome despite contradictory source evidence.
+- **Alternatives considered:** Trust the verifier artifact alone; compare only the vault-write artifact; leave free-text replay assertions readable.
+- **Why rejected:** A verifier-only view does not detect contradictory linked evidence; a vault-only comparison misses future artifacts; free text cannot be mechanically cross-checked at the trust boundary.
+- **Consequences:** The projection and read API now fail closed with an explicit evidence-contradiction error for mismatched replay IDs, statuses, execution state, commands, or exit codes. Replay claims must be structured rather than narrative.

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 interface CommandResult {
@@ -17,6 +17,33 @@ interface VerifierArtifact {
   baselineEvidence: CommandResult;
   candidateEvidence: CommandResult[];
   limitations: string[];
+}
+
+interface RegressionReplayClaim {
+  runId: string;
+  executed: true;
+  status: string;
+  afterMutation: { command: string; exitCode: number };
+}
+
+interface RegressionReplayArtifact {
+  runId: string;
+  parentRunId: string;
+  authority: string;
+  status: string;
+  evaluationId: string;
+  baseCandidateCommit: string;
+  afterMutation: CommandResult;
+}
+
+interface VaultWriteArtifact {
+  runId: string;
+  authority: string;
+  approval: string;
+  status: string;
+  approvedCandidateCommit: string;
+  writtenTargets: string[];
+  regressionReplay: RegressionReplayClaim;
 }
 
 export interface FoundryRunProjection {
@@ -107,6 +134,52 @@ function requiredCommand(commands: CommandResult[], command: string): CommandRes
   return result;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isRegressionReplayClaim(value: unknown): value is RegressionReplayClaim {
+  if (!isRecord(value) || value.executed !== true || typeof value.runId !== "string" || typeof value.status !== "string" || !isRecord(value.afterMutation)) {
+    return false;
+  }
+
+  return typeof value.afterMutation.command === "string" && typeof value.afterMutation.exitCode === "number";
+}
+
+function containsUnstructuredReplayClaim(value: unknown): boolean {
+  if (typeof value === "string") return /\bregression replay\b/i.test(value);
+  if (Array.isArray(value)) return value.some(containsUnstructuredReplayClaim);
+  if (isRecord(value)) return Object.entries(value).some(([key, nested]) => key !== "regressionReplay" && containsUnstructuredReplayClaim(nested));
+  return false;
+}
+
+function assertRegressionReplayConsistency(evidenceDirectory: string, parentRunId: string, replay: RegressionReplayArtifact): void {
+  for (const fileName of readdirSync(evidenceDirectory).filter((name) => name.endsWith(".json"))) {
+    const candidate = artifact<unknown>(evidenceDirectory, fileName);
+    if (!isRecord(candidate) || (candidate.runId !== parentRunId && candidate.parentRunId !== parentRunId)) continue;
+
+    if (containsUnstructuredReplayClaim(candidate)) {
+      throw new Error(`Evidence contradiction: '${fileName}' contains an unstructured regression replay claim.`);
+    }
+
+    if (candidate.regressionReplay === undefined) continue;
+    if (!isRegressionReplayClaim(candidate.regressionReplay)) {
+      throw new Error(`Evidence contradiction: '${fileName}' has malformed typed regression replay evidence.`);
+    }
+
+    const claim = candidate.regressionReplay;
+    if (
+      claim.runId !== replay.runId ||
+      claim.executed !== true ||
+      claim.status !== replay.status ||
+      claim.afterMutation.command !== replay.afterMutation.command ||
+      claim.afterMutation.exitCode !== replay.afterMutation.exitCode
+    ) {
+      throw new Error(`Evidence contradiction: '${fileName}' regression replay claim conflicts with '${replay.runId}'.`);
+    }
+  }
+}
+
 /**
  * Produces the narrow, read-only record that judge-facing surfaces may display.
  * Evidence artifacts remain authoritative; this function makes no verification
@@ -115,15 +188,8 @@ function requiredCommand(commands: CommandResult[], command: string): CommandRes
 export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunProjection {
   const verifier = artifact<VerifierArtifact>(evidenceDirectory, "RUN-PAY-17-001-verifier.json");
   const approval = artifact<{ runId: string; authority: string; decision: string; approvedCandidateCommit: string; parentBaselineCommit: string; limits: string[] }>(evidenceDirectory, "RUN-PAY-17-001-human-approval.json");
-  const vaultWrite = artifact<{ runId: string; authority: string; writtenTargets: string[]; approval: string; status: string; approvedCandidateCommit: string }>(evidenceDirectory, "RUN-PAY-17-001-vault-write.json");
-  const replay = artifact<{
-    parentRunId: string;
-    authority: string;
-    status: string;
-    evaluationId: string;
-    baseCandidateCommit: string;
-    afterMutation: CommandResult;
-  }>(evidenceDirectory, "RUN-PAY-17-001-regression-replay.json");
+  const vaultWrite = artifact<VaultWriteArtifact>(evidenceDirectory, "RUN-PAY-17-001-vault-write.json");
+  const replay = artifact<RegressionReplayArtifact>(evidenceDirectory, "RUN-PAY-17-001-regression-replay.json");
   const implementation = artifact<{
     runId: string;
     taskId: string;
@@ -135,7 +201,7 @@ export function loadPay17RunProjection(evidenceDirectory: string): FoundryRunPro
   }>(evidenceDirectory, "RUN-PAY-17-001-implementation.json");
   const memoryPack = artifact<{ runId: string; repositoryCommit: string; estimatedTokens: number; tokenBudget: number; confidenceScore: number; naiveComparisonReason: string; sources: { id: string; type: string; confidence: number; freshness: string; reason: string; verification: string; evidenceReferences: string[] }[]; omittedSources: { id: string; type: string; confidence: number; freshness: string; reason: string }[] }>(evidenceDirectory, "RUN-PAY-17-001-memory-pack.json");
 
-  assertEvidenceContract(verifier, approval, vaultWrite, replay, implementation, memoryPack);
+  assertEvidenceContract(evidenceDirectory, verifier, approval, vaultWrite, replay, implementation, memoryPack);
   const candidatePay17 = requiredCommand(verifier.candidateEvidence, "npm run test:pay-17");
   const browser = requiredCommand(verifier.candidateEvidence, "npm run test:browser");
   if (!Array.isArray(approval.limits) || !Array.isArray(vaultWrite.writtenTargets)) {
@@ -242,10 +308,11 @@ function assertCommandExit(result: CommandResult, expectedExitCode: number, cont
 }
 
 function assertEvidenceContract(
+  evidenceDirectory: string,
   verifier: VerifierArtifact,
   approval: { runId: string; authority: string; decision: string; approvedCandidateCommit: string; parentBaselineCommit: string; limits: string[] },
-  vaultWrite: { runId: string; authority: string; approval: string; status: string; approvedCandidateCommit: string; writtenTargets: string[] },
-  replay: { parentRunId: string; authority: string; status: string; baseCandidateCommit: string; afterMutation: CommandResult },
+  vaultWrite: VaultWriteArtifact,
+  replay: RegressionReplayArtifact,
   implementation: { runId: string; taskId: string; status: string; verificationAuthority: string; candidate: { baselineCommit: string; changedPaths: string[] } },
   memoryPack: { runId: string; repositoryCommit: string; estimatedTokens: number; tokenBudget: number; confidenceScore: number },
 ): void {
@@ -278,6 +345,10 @@ function assertEvidenceContract(
     throw new Error("Regression replay evidence is not linked to the approved PAY-17 candidate.");
   }
   assertCommandExit(replay.afterMutation, 1, "Regression replay evidence");
+  if (!isRegressionReplayClaim(vaultWrite.regressionReplay)) {
+    throw new Error("Vault-write evidence must declare typed regression replay evidence.");
+  }
+  assertRegressionReplayConsistency(evidenceDirectory, verifier.runId, replay);
   if (memoryPack.runId !== verifier.runId || memoryPack.repositoryCommit !== approval.approvedCandidateCommit || memoryPack.estimatedTokens <= 0 || memoryPack.tokenBudget <= 0 || memoryPack.estimatedTokens > memoryPack.tokenBudget || memoryPack.confidenceScore < 0 || memoryPack.confidenceScore > 1) {
     throw new Error("Post-repair Memory Pack metadata is not trustworthy for this approved candidate.");
   }

@@ -9,7 +9,24 @@ type Run = typeof staticRun;
 export function App() {
   const [view, setView] = useState<View>("story");
   const [run, setRun] = useState<Run>(staticRun);
-  useEffect(() => { void fetch("/api/runs/RUN-PAY-17-001").then((r) => r.ok ? r.json() : Promise.reject()).then(setRun).catch(() => undefined); }, []);
+  const [evidenceError, setEvidenceError] = useState<"evidence_contradiction" | "evidence_unavailable" | null>(null);
+  useEffect(() => {
+    void fetch("/api/runs/RUN-PAY-17-001")
+      .then(async (response) => {
+        if (response.ok) return { run: await response.json() as Run, error: null };
+        const body = await response.json().catch(() => null) as { error?: string } | null;
+        return { run: null, error: body?.error === "evidence_contradiction" ? "evidence_contradiction" as const : "evidence_unavailable" as const };
+      })
+      .then(({ run: loadedRun, error }) => {
+        if (loadedRun) setRun(loadedRun);
+        if (error) setEvidenceError(error);
+      })
+      .catch(() => setEvidenceError("evidence_unavailable"));
+  }, []);
+  if (evidenceError) {
+    const contradiction = evidenceError === "evidence_contradiction";
+    return <main className="app-shell"><section className="workspace"><header className="topbar"><div><Text className="breadcrumb" size={200}>Run / RUN-PAY-17-001</Text><h1>{contradiction ? "Evidence contradiction" : "Evidence unavailable"}</h1></div></header><Card className="panel"><CardHeader header={<Text weight="semibold">Projection blocked</Text>} description={contradiction ? "Foundry found contradictory recorded evidence and refuses to display a guessed proof status." : "Foundry could not validate the recorded evidence and refuses to display a proof status."} /></Card></section></main>;
+  }
   return <main className="app-shell"><aside className="sidebar"><div className="brand"><span className="brand-mark">CF</span><span>Codex Foundry</span></div><Text size={200}>Proof system · local fixture</Text><div className="sidebar-foot"><Text size={200}>Verifier-owned evidence</Text><Text size={200}>No production authority</Text></div></aside><section className="workspace">
     <header className="topbar"><div><Text className="breadcrumb" size={200}>Run / RUN-PAY-17-001 / {run.schemaVersion}</Text><h1>{run.title}</h1></div><Badge appearance="filled" color="success" icon={<CheckmarkCircle20Filled />}>Independent verification: {run.status}</Badge></header>
     <section className="run-banner"><div className="banner-icon"><ShieldCheckmark20Filled /></div><div><Text weight="semibold">One duplicate-charge defect was repaired, independently proven, and made reusable.</Text><Text block size={300}>The deliberate retry-key regression was later blocked by the unchanged PAY-17 proof.</Text></div></section>

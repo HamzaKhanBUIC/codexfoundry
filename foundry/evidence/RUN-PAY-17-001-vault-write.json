@@ -5,6 +5,15 @@
   "status": "completed",
   "stagedBundleCommit": "7872af8",
   "approvedCandidateCommit": "63417cadd2ed28ec0a0dd7832be900285119c885",
+  "regressionReplay": {
+    "runId": "RUN-PAY-17-001-REGRESSION-001",
+    "executed": true,
+    "status": "regression_blocked",
+    "afterMutation": {
+      "command": "npm run test:pay-17",
+      "exitCode": 1
+    }
+  },
   "writtenTargets": [
     "vault/architecture/ARCH-001-checkout-flow.md",
     "vault/incidents/INC-001-pay-17-duplicate-charge.md",
@@ -19,7 +28,6 @@
     "stagedContent": "matches live vault content after CRLF/LF normalization"
   },
   "notes": [
-    "The compiler fixture now expects ADR-001 plus PROOF-001 because the refreshed ADR owns the direct verified source reference and is the smaller trustworthy context.",
-    "The deliberate regression replay remains pending and is not claimed as executed."
+    "The compiler fixture now expects ADR-001 plus PROOF-001 because the refreshed ADR owns the direct verified source reference and is the smaller trustworthy context."
   ]
 }

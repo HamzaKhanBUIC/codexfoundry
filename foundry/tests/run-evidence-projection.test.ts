@@ -47,4 +47,19 @@ describe("PAY-17 proof view projection", () => {
       await rm(temporaryEvidence, { recursive: true, force: true });
     }
   });
+
+  it("fails closed when same-run evidence contradicts the recorded regression replay", async () => {
+    const temporaryEvidence = await mkdtemp(path.join(os.tmpdir(), "codex-foundry-evidence-"));
+    try {
+      await cp(directory, temporaryEvidence, { recursive: true });
+      const vaultWritePath = path.join(temporaryEvidence, "RUN-PAY-17-001-vault-write.json");
+      const vaultWrite = JSON.parse(await readFile(vaultWritePath, "utf8")) as { regressionReplay: { status: string } };
+      vaultWrite.regressionReplay.status = "pending";
+      await writeFile(vaultWritePath, JSON.stringify(vaultWrite), "utf8");
+
+      expect(() => loadPay17RunProjection(temporaryEvidence)).toThrow("Evidence contradiction: 'RUN-PAY-17-001-vault-write.json' regression replay claim conflicts with 'RUN-PAY-17-001-REGRESSION-001'.");
+    } finally {
+      await rm(temporaryEvidence, { recursive: true, force: true });
+    }
+  });
 });
