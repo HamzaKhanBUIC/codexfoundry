@@ -47,4 +47,18 @@ describe("Foundry read API", () => {
       await rm(temporaryEvidence, { recursive: true, force: true });
     }
   });
+
+  it("reports incomplete evidence instead of skipping a missing intake gate", async () => {
+    const temporaryEvidence = await mkdtemp(path.join(os.tmpdir(), "codex-foundry-api-evidence-"));
+    try {
+      await cp(evidenceDirectory, temporaryEvidence, { recursive: true });
+      await rm(path.join(temporaryEvidence, "RUN-PAY-17-001-intake.json"));
+
+      const response = await request("/api/runs/RUN-PAY-17-001", "GET", temporaryEvidence);
+      expect(response.status).toBe(503);
+      await expect(response.json()).resolves.toEqual({ error: "evidence_incomplete" });
+    } finally {
+      await rm(temporaryEvidence, { recursive: true, force: true });
+    }
+  });
 });

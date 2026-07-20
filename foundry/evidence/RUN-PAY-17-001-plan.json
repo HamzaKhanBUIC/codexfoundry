@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "artifactType": "plan",
+  "runId": "RUN-PAY-17-001",
+  "recordedAt": "2026-07-20T14:06:07.6288971+05:00",
+  "plan": {
+    "id": "PLAN-PAY-17-001",
+    "taskId": "PAY-17",
+    "memoryPack": {
+      "id": "PACK-PAY-17",
+      "repositoryCommit": "93ef28fa1737767a4a0c3b38fa8f9a6158980bb6",
+      "generatedAt": "2026-07-18T12:00:00.000Z",
+      "estimatedTokens": 634,
+      "tokenBudget": 12000,
+      "confidenceScore": 0.88,
+      "sources": [{
+        "id": "ARCH-001",
+        "relevanceScore": 0.66,
+        "confidenceScore": 0.88,
+        "freshness": "fresh",
+        "reason": "matches requirement PAY-17; matches service checkout-service, payment-gateway; shares task terms checkout, retry; covers requirement:pay-17, service:checkout-service, service:payment-gateway"
+      }],
+      "omittedSourceIds": ["ADR-001", "EVAL-001", "INC-000", "INC-001", "PROOF-001", "SVC-001", "SVC-002"]
+    },
+    "summary": "Preserve the original idempotency key through the checkout retry.",
+    "rootCauseHypothesis": "Hypothesis: CheckoutService mutates the retry idempotency key after a gateway acknowledgement timeout.",
+    "affectedPaths": ["src/services/checkout-service.ts", "tests/browser/pay-17.spec.ts"],
+    "allowedCommands": ["npm run build", "npm run test:health", "npm run test:pay-17", "npm run test:browser"],
+    "proofContract": [{
+      "requirementId": "PAY-17",
+      "assertion": "one logical checkout persists one payment",
+      "commands": ["npm run test:pay-17", "npm run test:browser"]
+    }],
+    "risks": ["The frozen baseline proof is intentionally red until a disposable candidate repair is independently verified.", "The candidate must not change the PAY-17 unit proof or write to the frozen baseline."],
+    "validation": {
+      "status": "accepted",
+      "checks": [
+        "Proposal paths match the final independently verified candidate boundary.",
+        "All four commands are in the PAY-17 repository allowlist.",
+        "The proof contract preserves the one-payment assertion and requires both unit and browser proof."
+      ]
+    },
+    "approval": {
+      "authority": "human_reviewer",
+      "decision": "approved",
+      "approvedAt": "2026-07-20T14:06:07.6288971+05:00",
+      "timestampMeaning": "historical approval confirmation recorded during evidence materialization",
+      "marker": "APPROVE PLAN (historical confirmation)",
+      "rationale": "The bounded repair scope, command allowlist, and executable proof contract are acceptable for a disposable candidate worktree."
+    }
+  },
+  "provenance": {
+    "mode": "historical-contract-replay",
+    "sources": ["foundry/src/plan-repository.ts", "foundry/tests/plan-repository.test.ts", "foundry/evidence/RUN-PAY-17-001-implementation.json", "foundry/evidence/RUN-PAY-17-001-verifier.json"],
+    "limitation": "This record materializes the deterministic validated and human-approved plan for the completed historical PAY-17 run; it does not claim a new Codex planner invocation."
+  }
+}

@@ -573,3 +573,13 @@ trade-offs are recorded here.
 - **Alternatives considered:** Trust the verifier artifact alone; compare only the vault-write artifact; leave free-text replay assertions readable.
 - **Why rejected:** A verifier-only view does not detect contradictory linked evidence; a vault-only comparison misses future artifacts; free text cannot be mechanically cross-checked at the trust boundary.
 - **Consequences:** The projection and read API now fail closed with an explicit evidence-contradiction error for mismatched replay IDs, statuses, execution state, commands, or exit codes. Replay claims must be structured rather than narrative.
+
+## ADR-034 — Require persisted intake and approved-plan evidence before later stages can project
+
+- **Status:** Accepted
+- **Milestone:** Phase 1 engineering QA
+- **Decision:** Add separate run-linked intake and plan evidence artifacts. The intake record preserves untrusted source issue data beside the validated task; the plan record preserves the baseline Memory Pack summary, validated proposal, proof contract, and distinct human approval marker. The projection and read API fail closed if either is absent or malformed while later-stage evidence exists.
+- **Why:** SQLite persisted these stages during a live run, but the release evidence set omitted them. The dashboard therefore displayed intake and approval as implied narrative rather than auditable gates, breaking the complete trust chain.
+- **Alternatives considered:** Leave SQLite as the only record; infer these gates from implementation evidence; add only static dashboard labels.
+- **Why rejected:** The release bundle does not include a reusable SQLite database; inference and labels can silently skip a required human gate and are not evidence.
+- **Consequences:** The dashboard and API now expose all six required workflow stages from run-linked artifacts. The historical PAY-17 records are explicitly marked as contract replays, so they document reconstructed durable evidence without claiming a fresh issue submission or planner invocation.

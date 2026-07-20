@@ -11,6 +11,8 @@ const manifestPath = resolve(root, "release", "demo-store-manifest.json");
 const releaseFixture = resolve(runtimeRoot, "demo-store");
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
 const requiredEvidence = [
+  "RUN-PAY-17-001-intake.json",
+  "RUN-PAY-17-001-plan.json",
   "RUN-PAY-17-001-verifier.json",
   "RUN-PAY-17-001-implementation.json",
   "RUN-PAY-17-001-human-approval.json",

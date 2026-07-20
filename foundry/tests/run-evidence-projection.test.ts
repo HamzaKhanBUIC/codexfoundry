@@ -13,6 +13,11 @@ describe("PAY-17 proof view projection", () => {
     expect(view.schemaVersion).toBe("1.0");
     expect(view.proofGraph.nodes).toHaveLength(8);
     expect(view.proofGraph.edges).toHaveLength(7);
+    expect(view.workflowStages).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "intake", evidenceSource: "RUN-PAY-17-001-intake.json", status: "recorded" }),
+      expect.objectContaining({ id: "plan", evidenceSource: "RUN-PAY-17-001-plan.json", status: "approved" }),
+      expect.objectContaining({ id: "vault_approval", evidenceSource: "RUN-PAY-17-001-vault-write.json", status: "completed" }),
+    ]));
     expect(view.review.changedPaths).toEqual(["src/services/checkout-service.ts", "tests/browser/pay-17.spec.ts"]);
     expect(view.review).toMatchObject({ vaultDecision: "APPROVE VAULT WRITE", vaultStatus: "completed" });
     expect(view.review.patchApprovalLimits.join(" ")).not.toContain("vault write was performed");
@@ -60,6 +65,20 @@ describe("PAY-17 proof view projection", () => {
       expect(() => loadPay17RunProjection(temporaryEvidence)).toThrow("Evidence contradiction: 'RUN-PAY-17-001-vault-write.json' regression replay claim conflicts with 'RUN-PAY-17-001-REGRESSION-001'.");
     } finally {
       await rm(temporaryEvidence, { recursive: true, force: true });
+    }
+  });
+
+  it("fails closed when later-stage evidence exists without required intake or approved-plan evidence", async () => {
+    for (const missingArtifact of ["RUN-PAY-17-001-intake.json", "RUN-PAY-17-001-plan.json"]) {
+      const temporaryEvidence = await mkdtemp(path.join(os.tmpdir(), "codex-foundry-evidence-"));
+      try {
+        await cp(directory, temporaryEvidence, { recursive: true });
+        await rm(path.join(temporaryEvidence, missingArtifact));
+
+        expect(() => loadPay17RunProjection(temporaryEvidence)).toThrow(`Evidence incomplete: required artifact '${missingArtifact}' is missing or malformed.`);
+      } finally {
+        await rm(temporaryEvidence, { recursive: true, force: true });
+      }
     }
   });
 });

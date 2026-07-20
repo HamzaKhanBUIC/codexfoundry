@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "artifactType": "intake",
+  "runId": "RUN-PAY-17-001",
+  "recordedAt": "2026-07-20T14:06:07.6288971+05:00",
+  "sourceIssue": {
+    "id": "PAY-17",
+    "title": "Duplicate charge during checkout retry",
+    "body": "Customer is charged twice after a timeout acknowledgement.",
+    "labels": ["bug", "payments", "checkout", "high-risk"],
+    "status": "open"
+  },
+  "trustedTask": {
+    "taskId": "PAY-17",
+    "title": "Duplicate charge during checkout retry",
+    "acceptanceCriteria": ["one logical checkout persists one payment"],
+    "riskLevel": "high",
+    "services": ["checkout-service", "payment-gateway"],
+    "paths": ["src/services/checkout-service.ts"],
+    "repositoryCommit": "93ef28fa1737767a4a0c3b38fa8f9a6158980bb6"
+  },
+  "validation": {
+    "status": "accepted",
+    "checks": [
+      "Seeded PAY-17 identifier, title, open status, and required labels were accepted.",
+      "The frozen repository map matched checkout-service, payment-gateway, checkout-service.ts, and baseline 93ef28f.",
+      "Untrusted issue prose was retained as source data and excluded from the trusted task handoff."
+    ]
+  },
+  "provenance": {
+    "mode": "historical-contract-replay",
+    "sources": ["foundry/src/issue-intake.ts", "foundry/tests/issue-intake.test.ts", "foundry/evidence/RUN-PAY-17-001-implementation.json"],
+    "limitation": "This record materializes the deterministic intake contract for the completed historical PAY-17 run; it does not claim a new issue submission."
+  }
+}

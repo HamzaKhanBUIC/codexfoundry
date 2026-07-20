@@ -8,10 +8,10 @@ function json(response: ServerResponse, statusCode: number, body: unknown): void
   response.end(JSON.stringify(body));
 }
 
-function evidenceErrorCode(error: unknown): "evidence_contradiction" | "evidence_unavailable" {
-  return error instanceof Error && error.message.startsWith("Evidence contradiction:")
-    ? "evidence_contradiction"
-    : "evidence_unavailable";
+function evidenceErrorCode(error: unknown): "evidence_contradiction" | "evidence_incomplete" | "evidence_unavailable" {
+  if (error instanceof Error && error.message.startsWith("Evidence contradiction:")) return "evidence_contradiction";
+  if (error instanceof Error && error.message.startsWith("Evidence incomplete:")) return "evidence_incomplete";
+  return "evidence_unavailable";
 }
 
 /** Read-only local API. It exposes no generic file access or action endpoints. */
