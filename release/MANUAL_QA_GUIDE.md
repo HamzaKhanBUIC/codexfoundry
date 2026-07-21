@@ -15,10 +15,10 @@ fail-closed trust boundary; skip that section for a normal read-only review.
 - Bundled Playwright Chromium, or installed Google Chrome as the documented
   fallback.
 
-### Open the release worktree
+### Open the checked-out repository
 
 ```powershell
-$Project = 'C:\Users\Hamza Imran\Desktop\OpenAI Build Week-m4'
+$Project = (Get-Location).Path
 Set-Location -LiteralPath $Project
 git branch --show-current
 git status --short
@@ -28,7 +28,8 @@ npm --version
 
 Expected:
 
-- Branch: `codex/m4-proof-experience`.
+- Any checked-out branch or commit that contains the documented PAY-17 release
+  artifacts. Record the exact value before making a commit-specific claim.
 - Node: `v24.x`.
 - No unexpected tracked changes.
 
@@ -137,12 +138,20 @@ Expected:
 - Browser command exits `0` because it successfully reproduces the known
   defect, visibly observing two payments.
 
-### Approved candidate
+### Approved candidate evidence
 
-The isolated candidate is available in this engineering workspace:
+The standard release clone packages the frozen baseline, not a checkout-able
+approved candidate. Candidate success is therefore inspected as recorded
+independent-verifier evidence in the dashboard and
+`foundry/evidence/`. Do not claim that a normal clone can rerun the approved
+candidate unless your own workspace contains that separately preserved
+candidate worktree.
+
+If an engineering workspace does contain the recorded candidate, use its
+actual path rather than a hard-coded machine-specific path:
 
 ```powershell
-$Candidate = 'C:\Users\Hamza Imran\Desktop\OpenAI Build Week\.foundry-worktrees\RUN-PAY-17-001-PORTS'
+$Candidate = '<path-to-a-preserved-RUN-PAY-17-001-candidate-worktree>'
 Set-Location -LiteralPath $Candidate
 git rev-parse HEAD
 npm run build
@@ -157,7 +166,7 @@ Expected:
 - Every command exits `0`.
 - Browser proof observes one payment after retry.
 
-### Parallel browser isolation
+### Parallel browser isolation (engineering workspace only)
 
 Run these in two PowerShell windows at the same time:
 
@@ -174,10 +183,14 @@ npm run test:browser
 Expected: both commands exit `0`, print distinct API/web port pairs, and do
 not produce `ECONNREFUSED` errors.
 
-### Regression replay
+### Regression replay evidence
+
+As with the approved candidate, a normal release clone does not package the
+regression worktree. Inspect its recorded independent-verifier artifact unless
+you are in an engineering workspace that preserved this disposable worktree.
 
 ```powershell
-$Regression = 'C:\Users\Hamza Imran\Desktop\OpenAI Build Week\.foundry-worktrees\RUN-PAY-17-001-PORTS-REGRESSION'
+$Regression = '<path-to-a-preserved-RUN-PAY-17-001-regression-worktree>'
 Set-Location -LiteralPath $Regression
 git rev-parse HEAD
 git status --short
@@ -255,7 +268,7 @@ other troubleshooting if the blocked state does not appear.
 - [ ] Regression candidate changes only the retry-key line.
 - [ ] Regression PAY-17 proof fails with two payments.
 - [ ] Memory tests pass (18 tests) and build succeeds.
-- [ ] Foundry tests pass (33 tests) and build succeeds.
+- [ ] Foundry tests pass (61 tests in the 2026-07-21 validation) and build succeeds.
 - [ ] Dashboard production build succeeds.
 - [ ] No dashboard console warnings or errors occur during the workflow.
 - [ ] No step grants merge, deployment, production, generic file, or automatic vault-write authority.
