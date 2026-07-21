@@ -12,7 +12,7 @@ production access, automatic merge/deploy, or generic repository chat.
 2. `architecture/system-design.md`
 3. `architecture/memory.md`
 4. `architecture/security.md`
-5. `implementation/task-board.md`
+5. `implementation/quality-gates-and-review-plan.md`
 6. `ARCHITECTURE_DECISIONS.md`
 
 ## Non-negotiable rules

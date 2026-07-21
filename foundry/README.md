@@ -1,8 +1,14 @@
 # Codex Foundry Core
 
-`foundry/` owns the local, strict TypeScript implementation of the PAY-17
-workflow policy and evidence projection. It is not a generic orchestration
-service and has no production, merge, deploy, or arbitrary-file authority.
+`foundry/` owns the local, strict TypeScript core for two deliberately separate
+contracts:
+
+1. the immutable, evidence-projected PAY-17 reference workflow; and
+2. policy-bound generic local-run primitives for a caller that supplies a
+   task, pinned baseline, approved paths, and direct commands.
+
+It has no production, merge, deploy, arbitrary-file, or dashboard action
+authority.
 
 ## Run and validate
 
@@ -27,6 +33,13 @@ The read-only server listens on `127.0.0.1:4174`.
 - Recorded implementation, independent verifier, human patch approval, vault
   approval, and regression-replay evidence.
 - One evidence projection consumed by the dashboard and local API.
+- Read-only Repository Intelligence: bounded filesystem/Git inspection,
+  evidence-backed static findings, explicit unknowns, and optional advisory
+  Codex semantic specialists.
+- Generic-run policy, disposable worktree, verifier, run-store, staged memory,
+  and exact Codex-receipt primitives. These are library-level workflow
+  components; the local API exposes persisted generic-run evidence but no
+  endpoint that starts or approves a run.
 
 ## Current evidence contract
 
@@ -43,12 +56,19 @@ It fails closed:
 - Contradictory same-run regression claims: `Evidence contradiction` and API
   `503 {"error":"evidence_contradiction"}`.
 
-The fixed API exposes only:
+## Read-only API
 
-- `GET /api/health`
-- `GET /api/runs/RUN-PAY-17-001`
+Every API route accepts `GET` only. It has no action endpoint.
 
-All other paths return `404`; non-GET requests return `405`.
+| Route | Purpose |
+|---|---|
+| `/api/health` | Loopback health check. |
+| `/api/runs/RUN-PAY-17-001` | Validated PAY-17 projection. Fails closed if required evidence is incomplete or contradictory. |
+| `/api/repository-analysis?path=<absolute-local-git-path>` | Bounded static repository report. The target repository is not executed. |
+| `/api/engineering-pipeline?path=<absolute-local-git-path>&codex=true|false` | Repository Intelligence pipeline. `codex=true` opts into advisory, citation-checked read-only semantic specialists. |
+| `/api/generic-runs/<run-id>` | Reads a previously persisted generic-run record; it cannot create or advance one. |
+
+Unknown routes return `404`; non-GET requests return `405`.
 
 See [intake/plan evidence](../architecture/intake-plan-evidence.md),
 [projection contract](../architecture/run-evidence-projection.md), and

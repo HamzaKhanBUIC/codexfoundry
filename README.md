@@ -5,6 +5,11 @@ software changes. It offers a deterministic proof sandbox, evidence-backed
 repository preparation, and a policy-bound generic local-run core, so teams
 can distinguish demonstrated trust from useful real-world context.
 
+It is deliberately not an autonomous deployment system or a generic repository
+chatbot. The shipped executable demonstration is PAY-17; the repository
+analysis and generic-run components make the same trust boundaries available
+as reusable local engineering primitives.
+
 ## Two product modes
 
 - **Reference Sandbox** keeps PAY-17 immutable: a fully recorded checkout
@@ -56,6 +61,16 @@ Issue intake → baseline Memory Pack → human-approved plan → disposable Cod
   verification, patch approval, and vault approval. Missing or contradictory
   evidence fails closed.
 
+## What is proven vs. what is prepared
+
+| Area | Current status | What a new reader should understand |
+|---|---|---|
+| PAY-17 Reference Sandbox | **Recorded and executable** | `npm run demo` materializes the frozen defective baseline and serves its validated, evidence-backed repair projection. The baseline reproduction remains intentionally red. |
+| Engineering Memory | **Implemented and tested** | Markdown vault indexing, graph relations, freshness, confidence, provenance, and token-budgeted Memory Pack selection are implemented in `memory/`. |
+| Repository Intelligence | **Implemented and tested, read-only** | A local Git repository can be statically inspected through the dashboard/API. It does not execute that repository's code or authorize a change. |
+| Policy-bound generic run | **Implemented and tested as core workflow primitives** | A caller supplies a task and human-reviewed policy; Foundry persists the gates and receipts. It is not exposed as a dashboard action or a second bundled live scenario. |
+| Merge, deploy, production access | **Not implemented by design** | No Foundry endpoint or dashboard control can perform these actions. |
+
 ## Proven PAY-17 state
 
 | Artifact | Current recorded value |
@@ -85,6 +100,14 @@ npm run demo
 builds Memory, Foundry core, then dashboard. `npm test` runs Memory and Foundry
 core tests; the dashboard currently has no separate test script.
 
+### Verified local validation
+
+On 2026-07-21, from this repository root, `npm run build` completed for all
+three workspaces and `npm test` completed with **18 Memory tests** and **61
+Foundry core tests** passing. See
+[documentation status](release/DOCUMENTATION_STATUS.md) for the exact scope of
+that verification and the intentionally unverified claims.
+
 `npm run demo` validates the evidence set, materializes the immutable fixture
 bundle under ignored `.foundry-runtime/demo-store`, checks the exact baseline
 commit and required fixture commands, probes browser availability, then starts:
@@ -112,13 +135,14 @@ installation prerequisite instead of hanging.
 
 ## Read next
 
-1. [Current project handoff](release/PROJECT_MASTER_HANDOFF.md)
-2. [Manual QA guide](release/MANUAL_QA_GUIDE.md)
-3. [MVP scope](product/mvp.md)
-4. [System design](architecture/system-design.md)
-5. [Repository Intelligence](architecture/repository-intelligence.md)
-6. [Engineering memory](architecture/memory.md)
-7. [Architecture decisions](ARCHITECTURE_DECISIONS.md)
+1. [MVP scope](product/mvp.md) — supported workflows and exclusions.
+2. [System design](architecture/system-design.md) — component and authority boundaries.
+3. [Repository Intelligence](architecture/repository-intelligence.md) — static-analysis scope and non-claims.
+4. [Engineering memory](architecture/memory.md) — Markdown memory semantics.
+5. [Core README](foundry/README.md) and [Dashboard README](foundry/dashboard/README.md) — local implementation and UI surfaces.
+6. [Current project handoff](release/PROJECT_MASTER_HANDOFF.md) and [manual QA guide](release/MANUAL_QA_GUIDE.md) — operational reference checks.
+7. [Documentation status](release/DOCUMENTATION_STATUS.md) — implementation-to-documentation comparison.
+8. [Architecture decisions](ARCHITECTURE_DECISIONS.md) — accepted rationale.
 
 The dashboard landing page makes the sandbox and repository-analysis roles
 explicit before any detail is shown.

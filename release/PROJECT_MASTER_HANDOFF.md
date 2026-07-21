@@ -1,9 +1,9 @@
 # Codex Foundry — Current Project Handoff
 
-**Use this document as the authoritative current-state reference.** Verify
+**Use this document as an operational current-state reference.** Verify
 `git status --short` and `git rev-parse HEAD` before making a commit-specific
-release claim. Historical reports are catalogued in
-[DOCUMENTATION_COMPARISON.md](DOCUMENTATION_COMPARISON.md).
+claim. The verified documentation comparison is maintained in
+[DOCUMENTATION_STATUS.md](DOCUMENTATION_STATUS.md).
 
 ## Product in one paragraph
 
@@ -55,9 +55,9 @@ claim a new issue submission or planner invocation.
 |---|---|---|
 | Frozen fixture | `demo-store/` and `release/demo-store.bundle` | Deterministic checkout defect, split test commands, browser proof. |
 | Memory | `memory/`, `vault/` | Markdown schema, index/graph, relevance, freshness, confidence, token budget, rendered pack. |
-| Foundry core | `foundry/src/` | SQLite state, intake, Memory Pack persistence, planner/worktree policy, projection, loopback API. |
-| Evidence | `foundry/evidence/` | Run-linked stage records, verifier proof, approvals, memory snapshot, replay. |
-| Dashboard | `foundry/dashboard/` | Read-only proof graph, Review, Memory Pack, Evidence, six-stage source list. |
+| Foundry core | `foundry/src/` | PAY-17 state/projection plus generic-policy, worktree, verifier, receipt, run-store, and read-only Repository Intelligence primitives. |
+| Evidence | `foundry/evidence/` | PAY-17 run-linked stage records, verifier proof, approvals, memory snapshot, replay. Generic runs persist separate Foundry-owned records when a caller executes the core workflow. |
+| Dashboard | `foundry/dashboard/` | Read-only PAY-17 proof graph plus Repository Intelligence and generic-run evidence handoff views. |
 | Release bootstrap | `release/demo.mjs` | Bundle materialization, provenance/command/browser preflight, local API and dashboard startup. |
 
 ## Trust boundaries that must not change
@@ -90,13 +90,20 @@ npm run test:pay-17
 npm run test:browser
 ```
 
-Latest validated suite counts: Memory **18/18**; Foundry core **33/33**;
-dashboard production build succeeds. The dashboard has no independent test
-script. Manual replay is documented in [MANUAL_QA_GUIDE.md](MANUAL_QA_GUIDE.md).
+Latest documented local validation (2026-07-21): Memory **18/18**; Foundry core
+**61/61**; dashboard production build succeeds. The dashboard has no
+independent test script. Manual replay is documented in
+[MANUAL_QA_GUIDE.md](MANUAL_QA_GUIDE.md); the verification scope and
+intentional limits are in [DOCUMENTATION_STATUS.md](DOCUMENTATION_STATUS.md).
 
 ## Operational limits
 
-- One fixed PAY-17 run and one local loopback read API only.
+- PAY-17 is the only bundled end-to-end executable reference run. Repository
+  Intelligence and generic-run primitives are implemented locally, but a
+  generic run requires a caller-supplied task and human-reviewed policy; it is
+  not a second bundled scenario or dashboard action.
+- The loopback read API also exposes bounded Repository Intelligence and
+  persisted generic-run records; every route remains read-only.
 - The release bundle packages the frozen baseline, not a checkout-able approved
   candidate; candidate success is recorded independent-verifier evidence.
 - The dashboard fetches the API once on load. Refresh after a live evidence
