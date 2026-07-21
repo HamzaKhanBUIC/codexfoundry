@@ -1,13 +1,35 @@
 # Codex Foundry
 
 Codex Foundry is a bounded engineering workflow for trustworthy AI-assisted
-software changes. It turns one task into a reviewed plan, an isolated Codex
-candidate, independent executable proof, explicit human approvals, and durable
-Markdown engineering memory.
+software changes. It offers a deterministic proof sandbox, evidence-backed
+repository preparation, and a policy-bound generic local-run core, so teams
+can distinguish demonstrated trust from useful real-world context.
 
-The MVP intentionally supports one complete scenario: **PAY-17**, a checkout
-retry defect that deterministically creates two payments at the frozen
-baseline.
+## Two product modes
+
+- **Reference Sandbox** keeps PAY-17 immutable: a fully recorded checkout
+  repair with independent verification, separate approvals, durable memory,
+  and regression replay.
+- **Analyze Repository** accepts a local Git repository path and derives
+  evidence-cited Git history, languages, framework/package/build/test markers,
+  entrypoints, static module/dependency relationships, architecture/domain
+  signals, security/debt/complexity review signals, an Engineering Intelligence
+  Dashboard (Repository DNA, a planning-readiness assessment, executive
+  briefing, and repository story), an interactive Architecture Explorer with
+  static change-impact chains, an explainable engineering report card, a
+  bounded Memory Pack, and Principal Engineer recommendations. It is read-only:
+  it may query Git metadata but does not run project
+  scripts, builds, tests, package-manager commands, create a worktree, verify
+  a patch, approve a plan, or write the vault. An explicit opt-in can add two
+  citation-checked, read-only Codex semantic advisors; they cannot change the
+  repository or grant authority.
+
+**PAY-17** remains the bundled canonical scenario: a checkout retry defect
+that deterministically creates two payments at the frozen baseline. The core
+also provides a policy-bound generic local-run workflow for arbitrary Git
+repositories: human-approved baseline, paths and direct commands → disposable
+Codex worktree → independent verification → separate approvals → staged
+Markdown memory and optional regression replay.
 
 ## What is implemented
 
@@ -23,6 +45,10 @@ Issue intake → baseline Memory Pack → human-approved plan → disposable Cod
   confidence, provenance, minimum-context selection, and token budget.
 - Bounded plan and implementation contracts. Codex may only work in a
   disposable candidate within approved paths and commands.
+- Persisted generic-run evidence shows the policy ceiling, Memory Pack,
+  acceptance criteria, proposed scope, proof contract, risks, human gates,
+  exact Codex input/output receipts, and independent verifier results in one
+  read-only handoff view.
 - Verifier-owned evidence. Implementer claims are never proof.
 - Read-only local dashboard, interactive proof graph, review, Memory Pack, and
   evidence views backed by one validated projection.
@@ -42,7 +68,7 @@ Issue intake → baseline Memory Pack → human-approved plan → disposable Cod
 
 The frozen fixture is never repaired or merged. The approved candidate remains
 an isolated disposable worktree; Foundry has no merge, deployment, production
-credential, or generic repository-write authority.
+credential, or authority to write the frozen baseline.
 
 ## Quick start
 
@@ -87,12 +113,12 @@ installation prerequisite instead of hanging.
 ## Read next
 
 1. [Current project handoff](release/PROJECT_MASTER_HANDOFF.md)
-2. [Documentation comparison and archival policy](release/DOCUMENTATION_COMPARISON.md)
-3. [Manual QA guide](release/MANUAL_QA_GUIDE.md)
-4. [MVP scope](product/mvp.md)
-5. [System design](architecture/system-design.md)
+2. [Manual QA guide](release/MANUAL_QA_GUIDE.md)
+3. [MVP scope](product/mvp.md)
+4. [System design](architecture/system-design.md)
+5. [Repository Intelligence](architecture/repository-intelligence.md)
 6. [Engineering memory](architecture/memory.md)
 7. [Architecture decisions](ARCHITECTURE_DECISIONS.md)
 
-Historical reports are retained for auditability but are not current operating
-instructions; the documentation comparison identifies them explicitly.
+The dashboard landing page makes the sandbox and repository-analysis roles
+explicit before any detail is shown.

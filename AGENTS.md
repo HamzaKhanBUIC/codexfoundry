@@ -2,7 +2,9 @@
 
 ## Product objective
 
-Build the one Foundry MVP workflow defined in `product/mvp.md`. Do not add unrelated agent features, production access, automatic merge/deploy, or generic repository chat.
+Preserve the PAY-17 reference workflow and the policy-bound generic local-run
+contract defined in `product/mvp.md`. Do not add unrelated agent features,
+production access, automatic merge/deploy, or generic repository chat.
 
 ## Required reading order
 

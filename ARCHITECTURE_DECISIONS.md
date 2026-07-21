@@ -583,3 +583,174 @@ trade-offs are recorded here.
 - **Alternatives considered:** Leave SQLite as the only record; infer these gates from implementation evidence; add only static dashboard labels.
 - **Why rejected:** The release bundle does not include a reusable SQLite database; inference and labels can silently skip a required human gate and are not evidence.
 - **Consequences:** The dashboard and API now expose all six required workflow stages from run-linked artifacts. The historical PAY-17 records are explicitly marked as contract replays, so they document reconstructed durable evidence without claiming a fresh issue submission or planner invocation.
+
+## ADR-035 — Separate repository preparation from executable Foundry runs
+
+- **Status:** Accepted
+- **Milestone:** Phase 1 dual-mode MVP
+- **Decision:** Add a local, read-only Repository Analysis mode beside the immutable PAY-17 Reference Sandbox. It derives file, dependency, command, Git-history, risk, and Memory Pack facts from a user-selected local Git repository, then presents suggested tasks as non-approved preparation.
+- **Why:** PAY-17 proves the trust architecture deterministically; repository analysis shows how the same bounded context discipline is useful before an engineering task is authorized.
+- **Alternatives considered:** Generalize the PAY-17 executor to arbitrary repositories; present a fake generic run; add an autonomous repository agent.
+- **Why rejected:** Generic execution would expand the frozen MVP and risk weakening the policy boundary. A fabricated run would be misleading. Autonomous operation would bypass required human and verifier gates.
+- **Consequences:** Analysis cannot create worktrees, run project commands, invoke Codex, mark proof verified, approve plans, or write the vault. Future execution must remain a separate explicit, approved contract.
+
+## ADR-036 — Make Repository Intelligence bounded, evidence-cited static analysis
+
+- **Status:** Accepted
+- **Milestone:** Repository Intelligence hardening
+- **Decision:** Expand the read-only Repository Analysis mode into a bounded static-analysis pipeline. Every section returns source or Git-query evidence, confidence, explicit unknowns, and limitations; the UI progressively discloses that support for every insight.
+- **Why:** A useful pre-planning context surface must answer real engineering questions without pretending a heuristic is an authoritative proof or giving a generic repository workflow execution power.
+- **Alternatives considered:** Execute repository tooling for richer facts; delegate interpretation to Codex; present unqualified automatic scores and vulnerability claims.
+- **Why rejected:** Tool execution and model interpretation broaden authority, permit untrusted code to run, and cannot remain deterministic. Unqualified scores and security claims overstate what static inspection can establish.
+- **Consequences:** The analyzer reads only bounded source text, manifests, metadata, and read-only Git queries. Dynamic behavior, semantic reachability, vulnerabilities, and unobserved usage remain UNKNOWN or low-confidence review candidates. PAY-17 remains the only executable verified workflow.
+
+## ADR-037 — Make Repository Intelligence conclusions explainable by construction
+
+- **Status:** Accepted
+- **Milestone:** Repository Intelligence refinement
+- **Decision:** Give every analysis section stable evidence identifiers,
+  reasoning, and cross-references; replace generic task suggestions with a
+  ranked, evidence-backed engineering backlog; and expose repository health as
+  a criterion-level static report card. Withhold the overall health score if a
+  bounded scan reaches either file or source-read limits.
+- **Why:** A repository preflight is useful only when an engineer can inspect
+  why it reached a conclusion, understand a recommendation's expected value
+  and uncertainty, and distinguish a partial scan from a complete one.
+- **Alternatives considered:** Keep summary-only task suggestions; display a
+  single opaque health number; allow partial scans to retain an overall score.
+- **Why rejected:** Summary tasks cannot be safely assigned without manual
+  rediscovery; opaque scores create false authority; partial scores imply a
+  precision the bounded static analyzer does not possess.
+- **Consequences:** The repository dashboard progressively discloses evidence,
+  reasoning, cross-references, unknowns, and limitations for report-card
+  criteria and backlog items. The output remains read-only preparation and
+  does not create a plan, worktree, implementation, verifier result, approval,
+  or vault write.
+
+## ADR-038 — Make readiness a conservative planning decision, not authority
+
+- **Status:** Accepted
+- **Milestone:** Repository Intelligence decision layer
+- **Decision:** Add Repository DNA, a deterministic planning-readiness
+  assessment, an executive briefing, a repository story, and decision cards
+  above the detailed analysis. Readiness can be safe for bounded AI planning,
+  needs manual review, or high risk; it is based only on bounded coverage, a
+  readable commit, supported entrypoints, and static non-test code-level
+  security review signals. Test-only scanner fixtures are preserved as visible
+  analysis context but do not make production-path planning unsafe.
+- **Why:** Before any human considers asking Codex to work, they need a concise
+  evidence-backed answer to whether the repository context is sufficient for a
+  bounded plan—not another opaque health score or a pseudo-approval button.
+- **Alternatives considered:** A model-written repository summary; treat health
+  score as readiness; make readiness authorize a planner or worktree.
+- **Why rejected:** Model prose may add unsupported interpretation; a health
+  score does not express gating conditions; authorization would violate the
+  separate human approval and worktree boundaries.
+- **Consequences:** The dashboard surfaces the decision in under one screen and
+  keeps all reasoning, evidence IDs, source files, unknowns, and limitations
+  expandable. Safe means planning context is sufficient only; it never means
+  code execution, verification, deployment, or security assurance is allowed.
+
+## ADR-039 — Make repository exploration a bounded static inspection graph
+
+- **Status:** Accepted
+- **Milestone:** Repository Intelligence Architecture Explorer
+- **Decision:** Add an Architecture Explorer built solely from the bounded
+  source inventory and resolved static relative-import graph. It exposes source
+  files and ancestor source directories, supported static imports and exports,
+  direct inbound/outbound relationships, related existing findings and backlog
+  items, and reverse-graph static change-impact estimates.
+- **Why:** A Staff Engineer needs to inspect the local dependency surface of a
+  potential change before considering a bounded plan. A repository-wide report
+  is useful, but it does not answer what a particular module owns or which
+  statically known modules may be affected.
+- **Alternatives considered:** Execute language servers, builds, tests, or
+  application tracing; use a model to infer semantic responsibility; expose an
+  arbitrary file browser or generic code editor.
+- **Why rejected:** Execution and tracing violate the read-only boundary;
+  model-derived semantics would overstate evidence; a file browser/editor adds
+  repository authority without strengthening the engineering decision.
+- **Consequences:** The Explorer labels responsibility and impact as bounded
+  static observations, surfaces all supporting evidence and unknowns, and
+  treats dynamic imports, runtime call paths, dependency injection, generated
+  code, and external consumers as UNKNOWN. Selecting a module only changes the
+  dashboard panel; it cannot open, modify, execute, plan, verify, approve, or
+  write anything.
+
+## ADR-040 — Generalize execution through an explicit per-run policy
+
+- **Status:** Accepted
+- **Milestone:** Phase 2, repository-agnostic orchestration
+- **Decision:** Keep PAY-17's fixed runner intact and add a separate generic
+  execution contract. Every generic run is bound to a human-approved policy
+  containing one clean baseline commit, allowed relative paths, and direct
+  structured command specs. Generic run state is Foundry-owned and read-only
+  to the dashboard.
+- **Why:** Generalization must not turn repository analysis, Codex output, or
+  free-form command strings into authority. A policy-first boundary lets the
+  platform work on local Git repositories without weakening the frozen demo.
+- **Alternatives considered:** Reuse the PAY-17 policy for all repositories;
+  accept shell command strings from a planner; let readiness create a
+  worktree; use an action-capable dashboard API.
+- **Why rejected:** PAY-17 rules are intentionally scenario-specific; shell
+  strings create command-injection authority; readiness is advisory only; an
+  action API would conflate evidence viewing with human approval.
+- **Consequences:** Codex planning is read-only and produces a proposal.
+  Human plan approval is required before a disposable worktree exists. Codex
+  implementation is non-authoritative; the verifier scopes the actual diff
+  and reruns exact approved commands. Patch approval and vault approval remain
+  separate. A regression replay may intentionally return to baseline content,
+  so only that typed path may run proof commands without requiring a non-empty
+  candidate diff.
+
+## ADR-041 — Preserve evidence traceability and graceful degradation across repository types
+
+- **Status:** Accepted
+- **Milestone:** Repository Intelligence hardening
+- **Decision:** Extend the bounded static reader to recognize C/C++ source and
+  CMake markers alongside the existing React/Node, Python, and Java evidence
+  paths. Reject untraceable specialist claims or recommendations during fusion,
+  persist exact bounded Codex prompt/schema/structured-output receipts for
+  generic planner and implementer stages, and convert specialist or generic
+  stage exceptions into explicit failed records rather than aborting or
+  silently dropping context.
+- **Why:** A repository-agnostic trust system must prove that it handles
+  diverse project shapes, never presents uncited AI output as engineering
+  context, and makes an unavailable specialist or Codex stage visible to the
+  engineer.
+- **Alternatives considered:** Support only JavaScript repositories; retain
+  uncited output with a warning; log only parsed Codex summaries; fail the
+  entire analysis when one specialist fails.
+- **Why rejected:** A JavaScript-only preflight contradicts the
+  repository-agnostic boundary; warnings leave unsupported conclusions in the
+  decision surface; summaries cannot show exactly what bounded context Codex
+  saw; whole-run failure hides useful independent evidence.
+- **Consequences:** Five representative repository fixtures (React, Node API,
+  Python, Java, and C++) are validated without running their code. Stored
+  receipts support audit and controlled re-invocation, not deterministic model
+  output or bypass of approval/verifier gates. The dashboard presents a compact
+  four-step workflow first and leaves detailed evidence progressively
+  disclosed.
+
+## ADR-042 — Present Codex scope before raw invocation receipts
+
+- **Status:** Accepted
+- **Milestone:** Final MVP hardening
+- **Decision:** When a persisted generic run is viewed, display the policy
+  ceiling, Memory Pack reference, task acceptance criteria, Codex plan scope,
+  proof contract, known risks, and human-plan-approval state before the exact
+  Codex prompt and structured-output receipt.
+- **Why:** Exact receipts make an interaction auditable, but they are not a
+  fast way for an engineer to understand what Foundry constrained Codex to do
+  or whether that proposal was authorized. The bounded plan is the governance
+  contract that connects repository context to a safe candidate worktree.
+- **Alternatives considered:** Show only raw prompt/output receipts; derive a
+  new dashboard-only interpretation of plan authority; add an action control
+  beside the displayed plan.
+- **Why rejected:** Raw receipts impose unnecessary reading cost; a second
+  interpretation risks diverging from persisted evidence; dashboard actions
+  would violate the read-only viewer boundary.
+- **Consequences:** The UI is a clearer engineering handoff while the existing
+  persisted generic run remains the only source of plan, policy, and receipt
+  facts. The view adds no authorization, execution, verification, merge,
+  deployment, or vault-write capability.
