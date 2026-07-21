@@ -1,148 +1,230 @@
 # Codex Foundry
 
-Codex Foundry is a bounded engineering workflow for trustworthy AI-assisted
-software changes. It offers a deterministic proof sandbox, evidence-backed
-repository preparation, and a policy-bound generic local-run core, so teams
-can distinguish demonstrated trust from useful real-world context.
+Codex Foundry is a local Developer Tool for **trustworthy AI-assisted software
+engineering**. It turns an engineering task into bounded context, a
+human-reviewed plan, a disposable candidate change, independent proof, and
+reusable Markdown engineering memory.
 
-It is deliberately not an autonomous deployment system or a generic repository
-chatbot. The shipped executable demonstration is PAY-17; the repository
-analysis and generic-run components make the same trust boundaries available
-as reusable local engineering primitives.
+It is not an autonomous deployer, a GitHub bot, or generic repository chat.
+Its central rule is simple: **Codex can propose and implement within an
+explicit boundary; only independent evidence and human approvals can establish
+trust.**
 
-## Two product modes
+## What Foundry Is
 
-- **Reference Sandbox** keeps PAY-17 immutable: a fully recorded checkout
-  repair with independent verification, separate approvals, durable memory,
-  and regression replay.
-- **Analyze Repository** accepts a local Git repository path and derives
-  evidence-cited Git history, languages, framework/package/build/test markers,
-  entrypoints, static module/dependency relationships, architecture/domain
-  signals, security/debt/complexity review signals, an Engineering Intelligence
-  Dashboard (Repository DNA, a planning-readiness assessment, executive
-  briefing, and repository story), an interactive Architecture Explorer with
-  static change-impact chains, an explainable engineering report card, a
-  bounded Memory Pack, and Principal Engineer recommendations. It is read-only:
-  it may query Git metadata but does not run project
-  scripts, builds, tests, package-manager commands, create a worktree, verify
-  a patch, approve a plan, or write the vault. An explicit opt-in can add two
-  citation-checked, read-only Codex semantic advisors; they cannot change the
-  repository or grant authority.
-
-**PAY-17** remains the bundled canonical scenario: a checkout retry defect
-that deterministically creates two payments at the frozen baseline. The core
-also provides a policy-bound generic local-run workflow for arbitrary Git
-repositories: human-approved baseline, paths and direct commands → disposable
-Codex worktree → independent verification → separate approvals → staged
-Markdown memory and optional regression replay.
-
-## What is implemented
+The shipped reference workflow is **PAY-17**, a deterministic duplicate-charge
+checkout defect. At the frozen baseline, one logical checkout retry creates
+two payments. Foundry presents the recorded repair as a complete trust chain:
 
 ```text
-Issue intake → baseline Memory Pack → human-approved plan → disposable Codex worktree
-→ independent verification → patch approval → separate vault approval
-→ reusable engineering memory → regression replay
+Issue → baseline Memory Pack → approved plan → disposable Codex candidate
+→ independent verifier → patch approval → vault approval
+→ approved engineering memory → regression replay
 ```
 
-- Deterministic Node/TypeScript ecommerce fixture with checkout, cart, API,
-  payment/order services, retry behavior, unit tests, and browser proof.
-- Commit-aware Obsidian Markdown memory: typed frontmatter, graph, freshness,
-  confidence, provenance, minimum-context selection, and token budget.
-- Bounded plan and implementation contracts. Codex may only work in a
-  disposable candidate within approved paths and commands.
-- Persisted generic-run evidence shows the policy ceiling, Memory Pack,
-  acceptance criteria, proposed scope, proof contract, risks, human gates,
-  exact Codex input/output receipts, and independent verifier results in one
-  read-only handoff view.
-- Verifier-owned evidence. Implementer claims are never proof.
-- Read-only local dashboard, interactive proof graph, review, Memory Pack, and
-  evidence views backed by one validated projection.
-- Explicit persisted records for intake, plan approval, implementation,
-  verification, patch approval, and vault approval. Missing or contradictory
-  evidence fails closed.
+Foundry also contains two reusable local capabilities:
 
-## What is proven vs. what is prepared
+- **Repository Intelligence**: bounded, evidence-cited static analysis of a
+  local Git repository before anyone authorizes AI planning. It does not run
+  the target repository.
+- **Policy-bound generic runs**: tested core primitives for caller-supplied
+  tasks, baseline commits, allowed paths, and direct commands. They are not a
+  second bundled live scenario and are not exposed as dashboard action buttons.
 
-| Area | Current status | What a new reader should understand |
-|---|---|---|
-| PAY-17 Reference Sandbox | **Recorded and executable** | `npm run demo` materializes the frozen defective baseline and serves its validated, evidence-backed repair projection. The baseline reproduction remains intentionally red. |
-| Engineering Memory | **Implemented and tested** | Markdown vault indexing, graph relations, freshness, confidence, provenance, and token-budgeted Memory Pack selection are implemented in `memory/`. |
-| Repository Intelligence | **Implemented and tested, read-only** | A local Git repository can be statically inspected through the dashboard/API. It does not execute that repository's code or authorize a change. |
-| Policy-bound generic run | **Implemented and tested as core workflow primitives** | A caller supplies a task and human-reviewed policy; Foundry persists the gates and receipts. It is not exposed as a dashboard action or a second bundled live scenario. |
-| Merge, deploy, production access | **Not implemented by design** | No Foundry endpoint or dashboard control can perform these actions. |
-
-## Proven PAY-17 state
-
-| Artifact | Current recorded value |
+| Area | Current status |
 |---|---|
-| Frozen baseline | `93ef28fa1737767a4a0c3b38fa8f9a6158980bb6` |
-| Approved candidate | `63417cadd2ed28ec0a0dd7832be900285119c885` |
-| Baseline proof | `npm run test:pay-17` exits `1`; it receives two payments |
-| Candidate proof | Build, health, PAY-17, and browser proof exit `0` |
-| Regression replay | Reintroducing only the retry-key mutation makes PAY-17 fail again |
+| PAY-17 Reference Sandbox | Bundled, recorded, and executable locally. |
+| Engineering Memory | Implemented and tested: Markdown index, graph, freshness, confidence, provenance, and token budgets. |
+| Repository Intelligence | Implemented and tested; strictly read-only. |
+| Generic policy-bound workflow | Implemented and tested as core primitives; requires a caller and human-reviewed policy. |
+| Merge, deployment, production access | Not implemented by design. |
 
-The frozen fixture is never repaired or merged. The approved candidate remains
-an isolated disposable worktree; Foundry has no merge, deployment, production
-credential, or authority to write the frozen baseline.
+## Installation
 
-## Quick start
-
-Requires Node 24.x and npm 11.x or compatible. From the repository root:
+The current documented implementation is on the
+[`codex/phase-1-repository-analysis`](https://github.com/HamzaKhanBUIC/codexfoundry/tree/codex/phase-1-repository-analysis)
+branch.
 
 ```powershell
+git clone https://github.com/HamzaKhanBUIC/codexfoundry.git
+cd codexfoundry
+git checkout codex/phase-1-repository-analysis
 npm install
+```
+
+Requirements:
+
+- Node.js 24.x
+- npm 11.x or compatible
+- Playwright Chromium, or installed Google Chrome for the documented browser
+  fallback
+
+`npm install` installs root workspaces and the nested dashboard dependencies.
+
+## Quick Start
+
+From the repository root:
+
+```powershell
 npm run build
 npm test
 npm run demo
 ```
 
-`npm install` also installs the nested dashboard dependencies. `npm run build`
-builds Memory, Foundry core, then dashboard. `npm test` runs Memory and Foundry
-core tests; the dashboard currently has no separate test script.
+`npm run build` type-checks Memory and Foundry core, then builds the Vite
+dashboard. `npm test` runs the Memory and Foundry-core suites; the dashboard
+does not currently have a separate test script.
 
-### Verified local validation
-
-On 2026-07-21, from this repository root, `npm run build` completed for all
-three workspaces and `npm test` completed with **18 Memory tests** and **61
-Foundry core tests** passing. See
-[documentation status](release/DOCUMENTATION_STATUS.md) for the exact scope of
-that verification and the intentionally unverified claims.
-
-`npm run demo` validates the evidence set, materializes the immutable fixture
-bundle under ignored `.foundry-runtime/demo-store`, checks the exact baseline
-commit and required fixture commands, probes browser availability, then starts:
+`npm run demo` validates the release evidence, materializes the immutable
+fixture under ignored `.foundry-runtime/demo-store`, checks its baseline commit
+and required commands, probes browser availability, then starts:
 
 - Dashboard: `http://127.0.0.1:4173`
 - Read-only API health: `http://127.0.0.1:4174/api/health`
-- Fixed run projection: `http://127.0.0.1:4174/api/runs/RUN-PAY-17-001`
+- PAY-17 projection: `http://127.0.0.1:4174/api/runs/RUN-PAY-17-001`
 
-Playwright Chromium is preferred. An installed stable Google Chrome is a
-tested fallback. If neither is available, the browser runner prints a clear
-installation prerequisite instead of hanging.
+## Architecture Overview
 
-## Trust model
+```mermaid
+flowchart LR
+  I[Issue / task] --> M[Commit-aware Memory Pack]
+  V[Obsidian Markdown vault] --> M
+  M --> P[Codex plan proposal]
+  P --> H[Human plan approval]
+  H --> W[Disposable Git worktree]
+  W --> C[Codex implementation report]
+  C --> X[Independent verifier]
+  X --> R[Human patch approval]
+  R --> A[Separate vault approval]
+  A --> K[Approved engineering memory]
+  X --> G[Regression replay]
+  X --> D[Read-only API and dashboard]
+```
 
-- Issue text, repository content, and vault notes are untrusted data.
-- Planner output is a validated proposal; only a human-approved plan permits a
-  candidate worktree.
-- The independent verifier is the only component that may mark proof
-  `verified`.
-- Patch approval and vault-write approval are separate human decisions.
-- The API and dashboard are read-only and cannot alter Git, vault, run, or
-  production state.
-- A missing intake/plan record returns `503 evidence_incomplete`; contradictory
-  replay evidence returns `503 evidence_contradiction`.
+The dashboard separates the following views:
 
-## Read next
+- **Reference Sandbox**: the immutable PAY-17 proof story, interactive proof
+  graph, review, Memory Pack, and recorded evidence.
+- **Analyze Repository**: Repository DNA, readiness assessment, static module
+  and dependency facts, Architecture Explorer, risks, unknowns, and
+  evidence-backed recommendations for a selected local Git repository.
+- **Generic-run handoff**: a read-only view of a persisted generic run, if one
+  exists. It shows the policy ceiling, plan, receipts, verification, and human
+  gates but offers no control to advance the run.
 
-1. [MVP scope](product/mvp.md) — supported workflows and exclusions.
-2. [System design](architecture/system-design.md) — component and authority boundaries.
-3. [Repository Intelligence](architecture/repository-intelligence.md) — static-analysis scope and non-claims.
-4. [Engineering memory](architecture/memory.md) — Markdown memory semantics.
-5. [Core README](foundry/README.md) and [Dashboard README](foundry/dashboard/README.md) — local implementation and UI surfaces.
-6. [Current project handoff](release/PROJECT_MASTER_HANDOFF.md) and [manual QA guide](release/MANUAL_QA_GUIDE.md) — operational reference checks.
-7. [Documentation status](release/DOCUMENTATION_STATUS.md) — implementation-to-documentation comparison.
-8. [Architecture decisions](ARCHITECTURE_DECISIONS.md) — accepted rationale.
+For the complete boundaries, read [system design](architecture/system-design.md)
+and [Repository Intelligence](architecture/repository-intelligence.md).
 
-The dashboard landing page makes the sandbox and repository-analysis roles
-explicit before any detail is shown.
+## How Codex Was Used
+
+Codex is used as a **bounded engineering worker**, not as the source of truth.
+
+- In a generic run, Codex planning receives a constrained task, Memory Pack,
+  approved policy, and structured output schema in a read-only sandbox.
+- Only after separate human plan approval may Codex implement inside a
+  disposable worktree, limited to approved relative paths and direct approved
+  commands.
+- Codex implementation reports are recorded as non-authoritative claims.
+  Foundry preserves the bounded prompt, response schema, raw structured output,
+  and hashes when Codex is invoked.
+- The independent verifier inspects the actual diff and reruns policy-approved
+  commands. It alone can mark a proof as verified.
+- Repository Intelligence can optionally invoke two read-only, citation-checked
+  Codex semantic specialists. Their results are advisory and cannot authorize
+  planning or execution.
+
+The bundled PAY-17 candidate success is recorded independent-verifier evidence;
+the release bundle does not include a checkout-able approved candidate worktree.
+
+## How GPT-5.6 Was Used
+
+Foundry contains GPT-5.6/Codex prompt contracts for structured planning and
+implementation, plus optional read-only semantic reasoning in Repository
+Intelligence. The generic Codex integration accepts an explicit model option
+and stores an immutable invocation receipt when it runs.
+
+The verified repository state does **not** claim a fresh, recorded GPT-5.6
+response from this checkout. GPT-5.6/Codex output is always treated as an
+untrusted proposal or advisory interpretation—not proof, approval, or a way to
+bypass policy. This distinction is intentional and documented in the
+[planner approval boundary](architecture/planner-approval.md) and
+[Repository Intelligence design](architecture/repository-intelligence.md).
+
+## Trust Boundaries
+
+- Issues, repository files, and vault notes are untrusted input.
+- Repository Intelligence is read-only: it may inspect bounded source and Git
+  metadata, but never runs the target repository's scripts, builds, tests, or
+  package-manager commands.
+- A planner proposal cannot create a worktree. A separate human approval is
+  required.
+- Codex may write only inside an approved disposable worktree and only to
+  approved paths.
+- Verifier evidence—not Codex narration—owns proof status.
+- Patch approval, vault-write approval, merge, and deployment are separate
+  concerns. Foundry implements only the first two approvals; merge and deploy
+  authority do not exist.
+- The PAY-17 projection fails closed: missing required evidence returns
+  `evidence_incomplete`; contradictory replay evidence returns
+  `evidence_contradiction`.
+- Dashboard and API routes are GET-only and read-only.
+
+## Supported Platforms
+
+| Environment | Status |
+|---|---|
+| Windows PowerShell + Node 24 + npm 11 | **Verified locally**. This is the documented QA environment. |
+| Browser proof with Playwright Chromium | Preferred runtime; install it when not already available. |
+| Browser proof with stable Google Chrome | Documented fallback; the bootstrap reports a prerequisite clearly if neither browser is usable. |
+| macOS or Linux | The TypeScript/Node project is portable in design, but this repository does not claim a full release validation on these platforms. |
+
+## How Judges Can Test It
+
+1. Install dependencies and run the build/test commands above.
+   - Verified on 2026-07-21: **18 Memory tests** and **61 Foundry-core tests**
+     passed; the dashboard production build passed.
+2. Run `npm run demo`, then open `http://127.0.0.1:4173`.
+3. In **Reference Sandbox**, inspect the causal graph, Review, Memory Pack, and
+   Evidence tabs. Confirm that Codex claims are visually distinct from
+   independently verified evidence.
+4. In the materialized fixture, reproduce the frozen defect:
+
+   ```powershell
+   Set-Location .foundry-runtime/demo-store
+   npm run build
+   npm run test:health
+   npm run test:pay-17
+   npm run test:browser
+   ```
+
+   Expected: build and health pass; `test:pay-17` exits `1` because it observes
+   two payments; browser proof exits `0` because it successfully reproduces
+   that known defect.
+5. Optionally follow the reversible fail-closed evidence drill in the
+   [Manual QA Guide](release/MANUAL_QA_GUIDE.md). It intentionally creates a
+   valid-but-contradictory evidence claim, expects the API/dashboard to block
+   the projection, and then restores the original file.
+
+Do not claim a token-savings percentage, a rerunnable approved candidate, or a
+browser trace/screenshot: the release artifacts do not establish those claims.
+
+## Reference PAY-17 Evidence
+
+| Artifact | Recorded value |
+|---|---|
+| Frozen baseline | `93ef28fa1737767a4a0c3b38fa8f9a6158980bb6` |
+| Approved candidate | `63417cadd2ed28ec0a0dd7832be900285119c885` |
+| Baseline proof | `npm run test:pay-17` exits `1`; it receives two payments. |
+| Candidate proof | Build, health, PAY-17, and browser proof recorded exit `0`. |
+| Regression replay | Reintroducing only the retry-key mutation makes the unchanged PAY-17 proof fail again. |
+
+## Read More
+
+1. [MVP scope](product/mvp.md)
+2. [System design](architecture/system-design.md)
+3. [Engineering Memory](architecture/memory.md)
+4. [Repository Intelligence](architecture/repository-intelligence.md)
+5. [Core README](foundry/README.md) and [Dashboard README](foundry/dashboard/README.md)
+6. [Manual QA guide](release/MANUAL_QA_GUIDE.md)
+7. [Documentation status](release/DOCUMENTATION_STATUS.md)
+8. [Architecture decisions](ARCHITECTURE_DECISIONS.md)
