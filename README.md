@@ -145,7 +145,7 @@ and stores an immutable invocation receipt when it runs.
 
 The verified repository state does **not** claim a fresh, recorded GPT-5.6
 response from this checkout. GPT-5.6/Codex output is always treated as an
-untrusted proposal or advisory interpretation—not proof, approval, or a way to
+untrusted proposal or advisory interpretation - not proof, approval, or a way to
 bypass policy. This distinction is intentional and documented in the
 [planner approval boundary](architecture/planner-approval.md) and
 [Repository Intelligence design](architecture/repository-intelligence.md).
@@ -160,7 +160,7 @@ bypass policy. This distinction is intentional and documented in the
   required.
 - Codex may write only inside an approved disposable worktree and only to
   approved paths.
-- Verifier evidence—not Codex narration—owns proof status.
+- Verifier evidence - not Codex narration - owns proof status.
 - Patch approval, vault-write approval, merge, and deployment are separate
   concerns. Foundry implements only the first two approvals; merge and deploy
   authority do not exist.
@@ -228,3 +228,4 @@ browser trace/screenshot: the release artifacts do not establish those claims.
 6. [Manual QA guide](release/MANUAL_QA_GUIDE.md)
 7. [Documentation status](release/DOCUMENTATION_STATUS.md)
 8. [Architecture decisions](ARCHITECTURE_DECISIONS.md)
+
