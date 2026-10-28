@@ -2,7 +2,7 @@
 
 > A local developer tool that puts AI coding (Codex) behind human plan approval, an isolated git worktree and an independent verifier, so an AI-proposed fix only counts as done when separate evidence proves it.
 
-**Status:** Hackathon prototype built for OpenAI Build Week (July 2026). One recorded reference run (PAY-17, a duplicate-charge checkout bug); merge and deployment are not implemented.
+**Status:** Hackathon prototype built solo for OpenAI Build Week (July 2026). One recorded reference run (PAY-17, a duplicate-charge checkout bug); merge and deployment are not implemented.
 **Demo:** [Demo video](https://youtu.be/5rJSPOZIT-Y) · Local: `npm ci && npm run demo`, then open http://127.0.0.1:4173
 
 Codex Foundry is a local Developer Tool for **trustworthy AI-assisted software
