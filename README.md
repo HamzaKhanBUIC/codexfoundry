@@ -1,5 +1,10 @@
 # Codex Foundry
 
+> A local developer tool that puts AI coding (Codex) behind human plan approval, an isolated git worktree and an independent verifier, so an AI-proposed fix only counts as done when separate evidence proves it.
+
+**Status:** Hackathon prototype built solo for OpenAI Build Week (July 2026). One recorded reference run (PAY-17, a duplicate-charge checkout bug); merge and deployment are not implemented.
+**Demo:** [Demo video](https://youtu.be/5rJSPOZIT-Y) · Local: `npm ci && npm run demo`, then open http://127.0.0.1:4173
+
 Codex Foundry is a local Developer Tool for **trustworthy AI-assisted software
 engineering**. It turns an engineering task into bounded context, a
 human-reviewed plan, a disposable candidate change, independent proof, and
@@ -41,15 +46,10 @@ Foundry also contains two reusable local capabilities:
 
 ## Installation
 
-The current documented implementation is on the
-[`codex/phase-1-repository-analysis`](https://github.com/HamzaKhanBUIC/codexfoundry/tree/codex/phase-1-repository-analysis)
-branch.
-
 ```powershell
 git clone https://github.com/HamzaKhanBUIC/codexfoundry.git
 cd codexfoundry
-git checkout codex/phase-1-repository-analysis
-npm install
+npm ci
 ```
 
 Requirements:
@@ -59,7 +59,7 @@ Requirements:
 - Playwright Chromium, or installed Google Chrome for the documented browser
   fallback
 
-`npm install` installs root workspaces and the nested dashboard dependencies.
+`npm ci` installs root workspaces and the nested dashboard dependencies (via the `postinstall` script).
 
 ## Quick Start
 
@@ -169,6 +169,34 @@ bypass policy. This distinction is intentional and documented in the
   `evidence_contradiction`.
 - Dashboard and API routes are GET-only and read-only.
 
+## Configuration
+
+All variables are optional; no API keys are needed to run the demo.
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `FOUNDRY_PORT` | `4174` | Port of the read-only API (`foundry/src/local-server.ts`). |
+| `FOUNDRY_CODEX_COMMAND` | `codex.cmd` on Windows, `codex` elsewhere | Path to the Codex CLI executable, used only when a Codex-backed step runs. |
+| `FOUNDRY_GENERIC_RUN_DIRECTORY` | `foundry/runtime/generic-runs` | Where the API looks for persisted generic runs (`foundry/src/read-api.ts`). |
+| `FOUNDRY_DEMO_STORE` | `.foundry-runtime/demo-store` | Location of the materialized demo fixture (`release/demo.mjs`). |
+
+## Testing
+
+```powershell
+npm test
+```
+
+Runs the Memory suite (18 tests) and the Foundry-core suite (61 tests). The dashboard has no test script, and the repository has no CI workflow yet.
+
+## Limitations
+
+- The API is documented as GET-only, but it does not check the `Host` or `Origin` header, and `GET /api/engineering-pipeline?...&codex=true` starts a Codex CLI run. Run it only on a machine you trust, on localhost.
+- `npm audit` reports a high-severity `js-yaml` 3.x issue (via `gray-matter`) that can cause high CPU on crafted vault frontmatter.
+- The Codex-backed paths (`codex=true`) were not exercised in the last audit.
+- The bundled PAY-17 run is a recording. The release bundle has no checkout-able approved candidate worktree.
+- Only Windows 11 with Node 24 has been tested.
+- The default branch is currently `codex/m4-proof-experience`; it is intended to become `main`.
+
 ## Supported Platforms
 
 | Environment | Status |
@@ -178,10 +206,10 @@ bypass policy. This distinction is intentional and documented in the
 | Browser proof with stable Google Chrome | Documented fallback; the bootstrap reports a prerequisite clearly if neither browser is usable. |
 | macOS or Linux | The TypeScript/Node project is portable in design, but this repository does not claim a full release validation on these platforms. |
 
-## How Judges Can Test It
+## Try It in 5 Minutes
 
 1. Install dependencies and run the build/test commands above.
-   - Verified on 2026-07-21: **18 Memory tests** and **61 Foundry-core tests**
+   - Last recorded run: **18 Memory tests** and **61 Foundry-core tests**
      passed; the dashboard production build passed.
 2. Run `npm run demo`, then open `http://127.0.0.1:4173`.
 3. In **Reference Sandbox**, inspect the causal graph, Review, Memory Pack, and
@@ -229,3 +257,6 @@ browser trace/screenshot: the release artifacts do not establish those claims.
 7. [Documentation status](release/DOCUMENTATION_STATUS.md)
 8. [Architecture decisions](ARCHITECTURE_DECISIONS.md)
 
+## License
+
+MIT. See [LICENSE](LICENSE).
